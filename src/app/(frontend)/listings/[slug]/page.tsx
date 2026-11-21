@@ -7,8 +7,12 @@ import { ListingDetailClient } from '@/components/kasafide/ListingDetailClient'
 import { PublicFooter } from '@/components/kasafide/PublicFooter'
 
 export async function generateStaticParams() {
-  const { listings } = await getCachedPublicMarketplace()
-  return listings.map((l) => ({ slug: l.slug }))
+  try {
+    const { listings } = await getCachedPublicMarketplace()
+    return listings.map((l) => ({ slug: l.slug }))
+  } catch {
+    return []
+  }
 }
 
 export async function generateMetadata({

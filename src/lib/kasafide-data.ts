@@ -115,28 +115,34 @@ export const getCachedPublicMarketplace = unstable_cache(
   async () => {
     const payload = await getPayloadClient()
     const [listingsRes, barangaysRes, sellersCountRes] = await Promise.all([
-      payload.find({
-        collection: 'listings',
-        overrideAccess: false,
-        where: { status: { equals: 'approved' } },
-        depth: 2,
-        limit: 100,
-        sort: '-featured,-createdAt',
-      }),
-      payload.find({
-        collection: 'barangays',
-        overrideAccess: false,
-        depth: 0,
-        limit: 50,
-        sort: 'name',
-      }),
-      payload.count({
-        collection: 'users',
-        overrideAccess: false,
-        where: {
-          and: [{ role: { equals: 'seller' } }, { accountStatus: { equals: 'verified' } }],
-        },
-      }),
+      payload
+        .find({
+          collection: 'listings',
+          overrideAccess: false,
+          where: { status: { equals: 'approved' } },
+          depth: 2,
+          limit: 100,
+          sort: '-featured,-createdAt',
+        })
+        .catch(() => ({ docs: [] })),
+      payload
+        .find({
+          collection: 'barangays',
+          overrideAccess: false,
+          depth: 0,
+          limit: 50,
+          sort: 'name',
+        })
+        .catch(() => ({ docs: [] })),
+      payload
+        .count({
+          collection: 'users',
+          overrideAccess: false,
+          where: {
+            and: [{ role: { equals: 'seller' } }, { accountStatus: { equals: 'verified' } }],
+          },
+        })
+        .catch(() => ({ totalDocs: 0 })),
     ])
 
     const listings = listingsRes.docs.map(mapListingDoc)
