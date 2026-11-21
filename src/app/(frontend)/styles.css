@@ -297,24 +297,20 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-.figma-custom-code-fragment {
-  display: contents;
-}
-
-.figma-bypass-link {
+.skip-to-content {
   position: fixed;
   top: 8px;
   left: 8px;
   z-index: 2147483647;
   transform: translateY(-150%);
   border-radius: 6px;
-  background: #111827;
-  color: #fff;
+  background: var(--primary);
+  color: var(--on-primary);
   padding: 8px 12px;
   font: 600 14px/1.2 system-ui, sans-serif;
   text-decoration: none;
 }
 
-.figma-bypass-link:focus {
+.skip-to-content:focus {
   transform: translateY(0);
 }

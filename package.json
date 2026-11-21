@@ -1,5 +1,5 @@
 {
-  "name": "figma-make-app",
+  "name": "kasafide",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -21,15 +21,24 @@
     "@payloadcms/richtext-lexical": "4.0.0-beta.10",
     "@payloadcms/translations": "4.0.0-beta.10",
     "@payloadcms/ui": "4.0.0-beta.10",
+    "@radix-ui/react-dialog": "^1.3.1",
+    "@radix-ui/react-label": "^2.1.17",
+    "@radix-ui/react-slot": "^1.5.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "graphql": "^16.8.1",
     "html-react-parser": "^5.2.10",
+    "lucide-react": "^1.77.0",
     "monaco-editor": "0.55.1",
     "next": "16.4.6",
     "next-auth": "5.0.0-beta.32",
     "payload": "4.0.0-beta.10",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "sharp": "^0.35.4"
+    "sharp": "^0.35.4",
+    "tailwind-merge": "^3.7.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",

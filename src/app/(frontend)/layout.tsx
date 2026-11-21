@@ -2,11 +2,6 @@ import React from "react"
 import type { Metadata, Viewport } from "next"
 import { Plus_Jakarta_Sans } from "next/font/google"
 import Script from "next/script"
-import { BodyCustomCode, renderHeadCustomCode } from "@/lib/make-custom-code"
-import {
-  makeSiteSettings,
-  sanitizeHtmlAttribute,
-} from "@/lib/make-site-settings"
 import "./styles.css"
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -16,15 +11,10 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 })
 
 const defaultTitle = "Kasafide – Verified Homes in Sta. Maria, Bulacan"
-const title = makeSiteSettings.title ?? defaultTitle
-const description =
-  makeSiteSettings.description ??
+const defaultDescription =
   "Kasafide is a verified housing rental and listing platform for Sta. Maria, Bulacan. Every seller is ID-checked and every listing is reviewed before it goes live."
-const favicon = makeSiteSettings.icons?.icon ?? "/assets/img/kasafide-favicon.svg"
-const socialImage = makeSiteSettings.openGraph?.image ?? "/assets/img/og-image.png"
-const googleAnalyticsId = sanitizeHtmlAttribute(
-  makeSiteSettings.analytics?.googleAnalyticsId,
-)
+const favicon = "/assets/img/kasafide-favicon.svg"
+const socialImage = "/assets/img/og-image.png"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -37,33 +27,27 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
   ),
-  title,
-  description,
+  title: defaultTitle,
+  description: defaultDescription,
   manifest: "/site.webmanifest",
   appleWebApp: {
     capable: true,
     title: "Kasafide",
     statusBarStyle: "black-translucent",
   },
-  robots:
-    makeSiteSettings.robots?.index === false
-      ? { follow: false, index: false }
-      : undefined,
   icons: {
     icon: favicon,
     apple: "/assets/img/apple-touch-icon.png",
   },
   openGraph: {
-    title,
-    description,
-    images: socialImage ? [socialImage] : undefined,
+    title: defaultTitle,
+    description: defaultDescription,
+    images: [socialImage],
   },
-  twitter: socialImage
-    ? {
-        card: "summary_large_image",
-        images: [socialImage],
-      }
-    : undefined,
+  twitter: {
+    card: "summary_large_image",
+    images: [socialImage],
+  },
 }
 
 export default function RootLayout({
@@ -71,13 +55,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const language = sanitizeHtmlAttribute(makeSiteSettings.language) || "en"
-  const addBypassLinks = makeSiteSettings.accessibility?.addBypassLinks === true
-  const customScripts = makeSiteSettings.customScripts
-
   return (
     <html
-      lang={language}
+      lang="en"
       data-theme="dark"
       data-scroll-behavior="smooth"
       className={plusJakartaSans.variable}
@@ -91,36 +71,14 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('kf_theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
           }}
         />
-        {renderHeadCustomCode(customScripts?.headStart, "head-start")}
-        {renderHeadCustomCode(customScripts?.headEnd, "head-end")}
       </head>
-      <body className="min-h-screen antialiased">
-        <BodyCustomCode html={customScripts?.bodyStart} />
-        {addBypassLinks && (
-          <a className="figma-bypass-link" href="#root">
-            Skip to content
-          </a>
-        )}
+      <body className="min-h-screen antialiased bg-[var(--bg)] text-[var(--text)]">
+        <a className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:p-3 focus:bg-[var(--primary)] focus:text-[var(--on-primary)] focus:rounded-md" href="#root">
+          Skip to content
+        </a>
         <div id="root" tabIndex={-1}>
           {children}
         </div>
-        {googleAnalyticsId && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
-              strategy="afterInteractive"
-            />
-            <Script id="figma-google-analytics" strategy="afterInteractive">
-              {`
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', ${JSON.stringify(googleAnalyticsId)});
-`}
-            </Script>
-          </>
-        )}
-        <BodyCustomCode html={customScripts?.bodyEnd} />
       </body>
     </html>
   )

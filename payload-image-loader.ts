@@ -2,7 +2,7 @@
 
 const PAYLOAD_FILE_PATH_PATTERN = /^\/(?!\/)(?:.+\/)?api\/[^/]+\/file\/.+$/
 
-export default function figmaNextImageLoader({
+export default function payloadNextImageLoader({
   quality,
   src,
   width,
