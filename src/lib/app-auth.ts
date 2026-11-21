@@ -1,7 +1,9 @@
 import 'server-only'
 import { cookies } from 'next/headers'
+import { randomBytes } from 'node:crypto'
 import { getPayloadClient } from '@/lib/payload'
 import { auth } from '@/auth'
+import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 import type { Config, User } from '@/payload-types'
 
 const APP_SESSION_COOKIE = 'app-session'
@@ -68,9 +70,60 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
     }
   }
 
+  async function getSupabaseSessionUser(): Promise<User | null> {
+    try {
+      const supabase = await createSupabaseClient()
+      const {
+        data: { user: sbUser },
+      } = await supabase.auth.getUser()
+
+      if (!sbUser || !sbUser.email) return null
+
+      const payload = await getPayloadClient()
+      const found = await payload.find({
+        collection: appUserCollection,
+        where: { email: { equals: sbUser.email.toLowerCase() } },
+        limit: 1,
+        depth: 1,
+        overrideAccess: true,
+      })
+
+      if (found.docs[0]) return found.docs[0] as User
+
+      // Auto-create local mirror user for the authenticated Supabase user
+      const metadata = sbUser.user_metadata || {}
+      const firstName = (metadata.first_name as string) || sbUser.email.split('@')[0]
+      const lastName = (metadata.last_name as string) || ''
+      const fullName = (metadata.full_name as string) || `${firstName} ${lastName}`.trim() || sbUser.email.split('@')[0]
+      const role = (metadata.role as 'buyer' | 'seller') || 'buyer'
+
+      const created = await payload.create({
+        collection: appUserCollection,
+        overrideAccess: true,
+        context: { trustedSeedOrOAuth: true },
+        data: {
+          email: sbUser.email.toLowerCase(),
+          password: randomBytes(24).toString('hex'),
+          firstName,
+          lastName,
+          fullName,
+          role,
+          accountStatus: 'verified',
+          authProvider: 'google',
+        },
+      })
+
+      return created as User
+    } catch {
+      return null
+    }
+  }
+
   async function getCurrentUser(): Promise<User | null> {
     const localUser = await getLocalSessionUser()
     if (localUser) return localUser
+    const sbUser = await getSupabaseSessionUser()
+    if (sbUser) return sbUser
     return await getOAuthSessionUser()
   }
 

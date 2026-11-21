@@ -1,5 +1,6 @@
 import { getPayloadClient } from '@/lib/payload'
 import { appAuth, getRoleHomePath } from '@/lib/app-auth'
+import { createClient as createSupabaseClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
   try {
@@ -34,10 +35,32 @@ export async function POST(request: Request) {
       )
     }
 
+    const fullName = [firstName, middleInitial ? `${middleInitial.replace(/\.$/, '')}.` : '', lastName]
+      .filter(Boolean)
+      .join(' ')
+
+    // 1. Create in Supabase Auth (auth.users)
+    try {
+      const supabase = await createSupabaseClient()
+      await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: fullName,
+            role,
+          },
+        },
+      })
+    } catch (sbErr) {
+      console.warn('Supabase signup notice:', sbErr)
+    }
+
     const payload = await getPayloadClient()
 
-    // Create user with overrideAccess: false (Users.access.create allows public signup,
-    // and Users.beforeChange enforces role in ['buyer','seller'] and accountStatus='unverified')
+    // 2. Create in Payload users collection
     await payload.create({
       collection: 'users',
       overrideAccess: false,
@@ -46,9 +69,7 @@ export async function POST(request: Request) {
         firstName,
         middleInitial: middleInitial || undefined,
         lastName,
-        fullName: [firstName, middleInitial ? `${middleInitial.replace(/\.$/, '')}.` : '', lastName]
-          .filter(Boolean)
-          .join(' '),
+        fullName,
         email,
         phone: phoneRaw ? `+63${phoneRaw}` : undefined,
         password,
@@ -71,7 +92,8 @@ export async function POST(request: Request) {
       },
     })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : ''
+    console.error('Signup error details:', err)
+    const msg = err instanceof Error ? err.message : String(err)
     if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('unique')) {
       return Response.json(
         { error: 'An account with this email already exists. Try signing in instead.' },
@@ -79,7 +101,7 @@ export async function POST(request: Request) {
       )
     }
     return Response.json(
-      { error: 'Unable to create your account right now. Please verify your details.' },
+      { error: `Unable to create your account: ${msg || 'Please verify your details.'}` },
       { status: 400 },
     )
   }
