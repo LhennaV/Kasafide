@@ -1,0 +1,320 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Kasafide Design System — Preserved from LhennaV/Kasafide
+   Brand Palette: Plum (#5B3A8E), Peach (#FF8A65), Ink (#2B1B3D), Cream (#FBF6F0)
+   Themes: Dark Plum (default) & Lavender Mist (light)
+   ───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --k-plum: #5B3A8E;
+  --k-peach: #FF8A65;
+  --k-ink: #2B1B3D;
+  --k-cream: #FBF6F0;
+  --k-white: #FFFFFF;
+  --k-black: #000000;
+  --k-ink-rgb: 43 27 61;
+  --k-plum-rgb: 91 58 142;
+  --k-peach-rgb: 255 138 101;
+  --k-cream-rgb: 251 246 240;
+  --k-black-rgb: 0 0 0;
+  --k-white-rgb: 255 255 255;
+  --k-gcash: #007DFE;
+  --k-maya: #00D632;
+}
+
+/* Dark Plum (Default) */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1E1230;
+  --surface: #2B1B3D;
+  --surface-soft: #34224B;
+  --border: #4A3568;
+  --text: #FBF6F0;
+  --text-soft: #DDD0EA;
+  --text-muted: #BBA9D1;
+  --primary: #FF8A65;
+  --primary-hover: #FFA182;
+  --on-primary: #2B1B3D;
+  --accent: #FF8A65;
+  --on-accent: #2B1B3D;
+  --heading-accent: #FF8A65;
+  --focus-ring: #FF8A65;
+
+  --bg-rgb: 30 18 48;
+  --surface-rgb: 43 27 61;
+  --text-rgb: 251 246 240;
+  --primary-rgb: 255 138 101;
+  --accent-rgb: 255 138 101;
+
+  --success: #6FD394;
+  --success-rgb: 111 211 148;
+  --warning: #F4BC5C;
+  --warning-rgb: 244 188 92;
+  --danger: #FF8A8A;
+  --danger-rgb: 255 138 138;
+  --info: #CDB4F5;
+  --info-rgb: 205 180 245;
+
+  --sidebar-bg: #2B1B3D;
+  --sidebar-active: #FF8A65;
+  --dot: rgb(255 255 255 / 0.045);
+  --wash-rgb: 255 255 255;
+  --shade-rgb: 0 0 0;
+  --glass-bg: rgb(43 27 61 / 0.68);
+  --glass-border: rgb(255 255 255 / 0.1);
+}
+
+/* Lavender Mist (Light) */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #ECE4F4;
+  --surface: #F7F2FB;
+  --surface-soft: #DFD3EE;
+  --border: #CDBFE0;
+  --text: #2B1B3D;
+  --text-soft: #4A3B5E;
+  --text-muted: #5F4F78;
+  --primary: #5B3A8E;
+  --primary-hover: #4A2E76;
+  --on-primary: #FBF6F0;
+  --accent: #FF8A65;
+  --on-accent: #2B1B3D;
+  --heading-accent: #5B3A8E;
+  --focus-ring: #5B3A8E;
+
+  --bg-rgb: 236 228 244;
+  --surface-rgb: 247 242 251;
+  --text-rgb: 43 27 61;
+  --primary-rgb: 91 58 142;
+  --accent-rgb: 255 138 101;
+
+  --success: #1A6B34;
+  --success-rgb: 26 107 52;
+  --warning: #7F4A08;
+  --warning-rgb: 127 74 8;
+  --danger: #9C1D29;
+  --danger-rgb: 156 29 41;
+  --info: #6E46B0;
+  --info-rgb: 110 70 176;
+
+  --sidebar-bg: #5B3A8E;
+  --sidebar-active: #FF8A65;
+  --dot: rgb(43 27 61 / 0.045);
+  --wash-rgb: 43 27 61;
+  --shade-rgb: 43 27 61;
+  --glass-bg: rgb(247 242 251 / 0.78);
+  --glass-border: rgb(43 27 61 / 0.1);
+}
+
+@layer base {
+  html {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg);
+    background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
+    background-size: 26px 26px;
+    color: var(--text);
+    font-family: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  a,
+  button {
+    -webkit-tap-highlight-color: transparent;
+    outline-color: var(--focus-ring);
+  }
+}
+
+/* Kasafide Brand Mark adaptive outline */
+.kf-logo {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.kf-logo .kf-outline {
+  stroke: var(--kf-logo-outline, var(--k-cream));
+}
+:root[data-theme="light"] .kf-logo:not(.kf-logo--dark) {
+  --kf-logo-outline: var(--k-ink);
+}
+.kf-logo--dark {
+  --kf-logo-outline: var(--k-cream);
+}
+.kf-logo--light {
+  --kf-logo-outline: var(--k-ink);
+}
+
+/* Frosted Glass Pill Navbar */
+.kf-glass-pill {
+  background-color: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px) saturate(165%);
+  -webkit-backdrop-filter: blur(18px) saturate(165%);
+  box-shadow: 0 8px 30px rgb(var(--shade-rgb) / 0.22);
+}
+
+/* Hero & Reveal Animations */
+@keyframes kf-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes kf-pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.85;
+  }
+  70% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+.kf-blur-word {
+  display: inline-block;
+  animation: kf-blur-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.kf-marker-pulse {
+  animation: kf-pulse-ring 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/* Desktop Hover-to-Expand Dashboard Sidebar (from Kasafide sidebar.js) */
+@media (min-width: 769px) {
+  .kf-rail-slot {
+    width: 68px;
+    min-width: 68px;
+  }
+  .kf-rail-panel {
+    width: 68px;
+    transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
+  }
+  .kf-rail-slot:hover .kf-rail-panel {
+    width: 232px;
+    box-shadow: 12px 0 36px rgb(0 0 0 / 0.32);
+  }
+  .kf-rail-slot:not(:hover) .kf-rail-label {
+    max-width: 0;
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  .kf-rail-slot:hover .kf-rail-label {
+    max-width: 170px;
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .kf-rail-slot:not(:hover) .kf-rail-submenu {
+    display: none;
+  }
+}
+
+/* 3D Flip Team Cards (from Kasafide about.html) */
+.kf-team-card {
+  perspective: 1100px;
+}
+.kf-team-flip {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.kf-team-card:hover .kf-team-flip,
+.kf-team-card.is-flipped .kf-team-flip {
+  transform: rotateY(180deg);
+}
+.kf-team-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.kf-team-back {
+  transform: rotateY(180deg);
+}
+
+/* Responsive Data Table -> Mobile Cards (from Kasafide responsive.css) */
+@media (max-width: 768px) {
+  .kf-data-table {
+    display: block;
+    width: 100%;
+  }
+  .kf-data-table thead {
+    display: none;
+  }
+  .kf-data-table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .kf-data-table tr {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .kf-data-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 0;
+    border: none;
+    text-align: right;
+  }
+  .kf-data-table td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-align: left;
+    flex-shrink: 0;
+  }
+}
+
+.pb-safe {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.figma-custom-code-fragment {
+  display: contents;
+}
+
+.figma-bypass-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 2147483647;
+  transform: translateY(-150%);
+  border-radius: 6px;
+  background: #111827;
+  color: #fff;
+  padding: 8px 12px;
+  font: 600 14px/1.2 system-ui, sans-serif;
+  text-decoration: none;
+}
+
+.figma-bypass-link:focus {
+  transform: translateY(0);
+}
