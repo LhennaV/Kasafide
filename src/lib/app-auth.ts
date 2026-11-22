@@ -137,11 +137,11 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
       throw new Error('Invalid email or password')
     }
     const cookieStore = await cookies()
+    const isProd = process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV?.includes('preview')
     cookieStore.set(APP_SESSION_COOKIE, result.token, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      partitioned: true,
+      secure: isProd,
+      sameSite: 'lax',
       path: '/',
       maxAge: APP_SESSION_MAX_AGE,
     })
@@ -150,11 +150,18 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
 
   async function clearLocalSession(): Promise<void> {
     const cookieStore = await cookies()
+    const isProd = process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV?.includes('preview')
     cookieStore.set(APP_SESSION_COOKIE, '', {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      partitioned: true,
+      secure: isProd,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    })
+    cookieStore.set('demo-role', '', {
+      httpOnly: false,
+      secure: isProd,
+      sameSite: 'lax',
       path: '/',
       maxAge: 0,
     })

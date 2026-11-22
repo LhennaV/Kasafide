@@ -119,9 +119,58 @@ export function SignUpClient() {
         <h1 className="text-2xl font-black text-center text-[var(--text)] mb-1">
           Create an account
         </h1>
-        <p className="text-xs sm:text-sm text-center text-[var(--text-muted)] mb-5">
+        <p className="text-xs sm:text-sm text-center text-[var(--text-muted)] mb-4">
           Join Kasafide to rent, buy, or list verified properties.
         </p>
+
+        {/* Prominent Instant Demo Role Preview Banner */}
+        <div className="mb-5 p-3.5 rounded-2xl border-2 border-[var(--primary)]/50 bg-[var(--primary)]/10 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[var(--primary)] flex items-center gap-1.5">
+              <span>⚡ Instant Demo Preview</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--primary)] text-[var(--on-primary)] font-black">
+                Zero Signup
+              </span>
+            </span>
+            <span className="text-[10px] text-[var(--text-muted)] font-bold">1-Click Test</span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            <Link
+              href="/api/app-auth/demo?role=buyer"
+              className="py-2 px-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)] hover:bg-[var(--primary)] hover:text-[var(--on-primary)] text-xs font-black text-[var(--text)] transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+            >
+              <span>👤</span>
+              <span>Buyer / Renter</span>
+            </Link>
+            <Link
+              href="/api/app-auth/demo?role=seller"
+              className="py-2 px-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)] hover:bg-[var(--primary)] hover:text-[var(--on-primary)] text-xs font-black text-[var(--text)] transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+            >
+              <span>🏡</span>
+              <span>Verified Seller</span>
+            </Link>
+            <Link
+              href="/api/app-auth/demo?role=admin"
+              className="py-2 px-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)] hover:bg-[var(--primary)] hover:text-[var(--on-primary)] text-xs font-black text-[var(--text)] transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+            >
+              <span>🛡️</span>
+              <span>Admin Moderator</span>
+            </Link>
+            <Link
+              href="/api/app-auth/demo?role=superadmin"
+              className="py-2 px-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--primary)] hover:bg-[var(--primary)] hover:text-[var(--on-primary)] text-xs font-black text-[var(--text)] transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+            >
+              <span>⚡</span>
+              <span>Super Admin</span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 my-4">
+          <span className="flex-1 h-px bg-[var(--border)]" />
+          <span className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">or register new account</span>
+          <span className="flex-1 h-px bg-[var(--border)]" />
+        </div>
 
         {error && (
           <div className="mb-4 p-3 rounded-xl bg-[var(--danger)]/15 border border-[var(--danger)]/35 text-xs font-semibold text-[var(--danger)]">

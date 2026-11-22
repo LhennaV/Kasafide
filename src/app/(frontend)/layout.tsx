@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata, Viewport } from "next"
 import { Plus_Jakarta_Sans } from "next/font/google"
 import Script from "next/script"
+import { InstantDemoBar } from "@/components/kasafide/InstantDemoBar"
 import "./styles.css"
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -79,6 +80,7 @@ export default function RootLayout({
         <div id="root" tabIndex={-1}>
           {children}
         </div>
+        <InstantDemoBar />
       </body>
     </html>
   )

@@ -220,15 +220,15 @@ export function PortalShell({
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'K'
 
   async function switchDemoRole(demoRole: 'buyer' | 'seller' | 'admin' | 'superadmin') {
-    const res = await fetch('/api/app-auth/login', {
+    const res = await fetch('/api/app-auth/demo', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ demoRole }),
+      body: JSON.stringify({ role: demoRole }),
     })
     const data = (await res.json()) as { ok?: boolean; redirectTo?: string }
     if (res.ok && data.ok) {
       await announceSessionChange(router)
-      router.push(data.redirectTo || '/module/buyer')
+      router.push(data.redirectTo || `/module/${demoRole === 'superadmin' ? 'super-admin' : demoRole}`)
     }
   }
 
@@ -332,22 +332,29 @@ export function PortalShell({
 
           <div className="flex items-center gap-2">
             {/* Desktop Quick Role Switcher Pill */}
-            <div className="hidden xl:flex items-center gap-1 px-2 py-1 rounded-full border border-[var(--border)] bg-[var(--bg)] text-[11px]">
-              <span className="text-[var(--text-muted)] font-semibold px-1.5">Switch Role:</span>
-              {(['buyer', 'seller', 'admin', 'superadmin'] as const).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => switchDemoRole(r)}
-                  className={`px-2.5 py-0.5 rounded-full font-bold capitalize cursor-pointer ${
-                    (r === 'superadmin' && user.role === 'super_duper_admin') || user.role === r
-                      ? 'bg-[var(--primary)] text-[var(--on-primary)]'
-                      : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-                  }`}
-                >
-                  {r === 'superadmin' ? 'Super' : r}
-                </button>
-              ))}
+            <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full border border-[var(--primary)]/40 bg-[var(--primary)]/10 text-[11px]">
+              <span className="text-[var(--primary)] font-black flex items-center gap-1 px-1">
+                <span>⚡ Demo:</span>
+              </span>
+              {(['buyer', 'seller', 'admin', 'superadmin'] as const).map((r) => {
+                const isCurrent =
+                  (r === 'superadmin' && (user.role === 'super_duper_admin' || user.role === 'superadmin')) ||
+                  user.role === r
+                return (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => switchDemoRole(r)}
+                    className={`px-2.5 py-0.5 rounded-full font-extrabold capitalize cursor-pointer transition ${
+                      isCurrent
+                        ? 'bg-[var(--primary)] text-[var(--on-primary)] shadow-xs'
+                        : 'text-[var(--text-soft)] hover:text-[var(--text)] hover:bg-[var(--surface)]'
+                    }`}
+                  >
+                    {r === 'superadmin' ? 'Super Admin' : r}
+                  </button>
+                )
+              })}
             </div>
 
             <ThemeToggle className="w-9 h-9" />
