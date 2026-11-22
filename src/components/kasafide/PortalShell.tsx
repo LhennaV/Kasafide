@@ -228,7 +228,7 @@ export function PortalShell({
     const data = (await res.json()) as { ok?: boolean; redirectTo?: string }
     if (res.ok && data.ok) {
       await announceSessionChange(router)
-      router.push(data.redirectTo || `/module/${demoRole === 'superadmin' ? 'super-admin' : demoRole}`)
+      window.location.href = data.redirectTo || `/module/${demoRole === 'superadmin' ? 'super-admin' : demoRole}`
     }
   }
 

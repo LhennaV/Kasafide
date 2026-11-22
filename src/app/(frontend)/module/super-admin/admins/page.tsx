@@ -10,16 +10,40 @@ export default async function SuperAdminAdminsPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const res = await payload.find({
-    collection: 'users',
-    user: rawUser,
-    overrideAccess: false,
-    where: { role: { in: ['admin', 'superadmin', 'super_duper_admin'] } },
-    limit: 50,
-    sort: '-createdAt',
-  })
+  const res = await payload
+    .find({
+      collection: 'users',
+      user: rawUser,
+      overrideAccess: false,
+      where: { role: { in: ['admin', 'superadmin', 'super_duper_admin'] } },
+      limit: 50,
+      sort: '-createdAt',
+    })
+    .catch(() => ({ docs: [] }))
 
-  const admins = (res.docs as User[]).map((u) => ({
+  let docs = res.docs as User[]
+  if (docs.length === 0) {
+    docs = [
+      {
+        id: 90003,
+        fullName: 'Staff Admin (Admin Demo)',
+        email: 'admin@kasafide.ph',
+        role: 'admin',
+        accountStatus: 'verified',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      } as unknown as User,
+      {
+        id: 90004,
+        fullName: 'Super Administrator (Super Admin Demo)',
+        email: 'superadmin@kasafide.ph',
+        role: 'superadmin',
+        accountStatus: 'verified',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      } as unknown as User,
+    ]
+  }
+
+  const admins = docs.map((u) => ({
     id: String(u.id),
     fullName: u.fullName,
     email: u.email,

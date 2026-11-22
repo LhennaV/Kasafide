@@ -13,14 +13,16 @@ export default async function BuyerSavedPage() {
 
   const payload = await getPayloadClient()
   const savedRes = savedIds.length
-    ? await payload.find({
-        collection: 'listings',
-        user: rawUser,
-        overrideAccess: false,
-        where: { id: { in: savedIds } },
-        depth: 2,
-        limit: 50,
-      })
+    ? await payload
+        .find({
+          collection: 'listings',
+          user: rawUser,
+          overrideAccess: false,
+          where: { id: { in: savedIds } },
+          depth: 2,
+          limit: 50,
+        })
+        .catch(() => ({ docs: [] }))
     : { docs: [] }
 
   const cards = savedRes.docs.map(mapListingDoc)

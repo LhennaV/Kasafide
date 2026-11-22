@@ -11,14 +11,16 @@ export default async function AdminReportsPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const res = await payload.find({
-    collection: 'listing-reports',
-    user: rawUser,
-    overrideAccess: false,
-    depth: 1,
-    limit: 50,
-    sort: '-createdAt',
-  })
+  const res = await payload
+    .find({
+      collection: 'listing-reports',
+      user: rawUser,
+      overrideAccess: false,
+      depth: 1,
+      limit: 50,
+      sort: '-createdAt',
+    })
+    .catch(() => ({ docs: [] }))
 
   const rows: ReportRow[] = res.docs.map((r: ListingReport) => {
     const listing = typeof r.listing === 'object' && r.listing ? (r.listing as Listing) : null

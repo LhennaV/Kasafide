@@ -14,15 +14,17 @@ export default async function SellerPaymentsPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const payRes = await payload.find({
-    collection: 'payments',
-    user: rawUser,
-    overrideAccess: false,
-    where: { payee: { equals: rawUser.id } },
-    depth: 1,
-    limit: 50,
-    sort: '-createdAt',
-  })
+  const payRes = await payload
+    .find({
+      collection: 'payments',
+      user: rawUser,
+      overrideAccess: false,
+      where: { payee: { equals: rawUser.id } },
+      depth: 1,
+      limit: 50,
+      sort: '-createdAt',
+    })
+    .catch(() => ({ docs: [] }))
 
   const rows: PaymentRowView[] = payRes.docs.map((p: Payment) => {
     const listing = typeof p.listing === 'object' && p.listing ? (p.listing as Listing) : null

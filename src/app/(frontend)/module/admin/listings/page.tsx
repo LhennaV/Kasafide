@@ -1,5 +1,5 @@
 import { getPayloadClient } from '@/lib/payload'
-import { mapListingDoc } from '@/lib/kasafide-data'
+import { DEMO_PULONG_BUHANGIN_LOT, mapListingDoc } from '@/lib/kasafide-data'
 import { requirePortalUser } from '@/lib/portal-guard'
 import { PortalShell } from '@/components/kasafide/PortalShell'
 import { AdminListingsClient } from './AdminListingsClient'
@@ -11,14 +11,21 @@ export default async function AdminListingsPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const res = await payload.find({
-    collection: 'listings',
-    user: rawUser,
-    overrideAccess: false,
-    depth: 2,
-    limit: 100,
-    sort: '-createdAt',
-  })
+  const res = await payload
+    .find({
+      collection: 'listings',
+      user: rawUser,
+      overrideAccess: false,
+      depth: 2,
+      limit: 100,
+      sort: '-createdAt',
+    })
+    .catch(() => ({ docs: [] }))
+
+  let listings = res.docs.map(mapListingDoc)
+  if (listings.length === 0) {
+    listings = [DEMO_PULONG_BUHANGIN_LOT]
+  }
 
   return (
     <PortalShell
@@ -33,7 +40,7 @@ export default async function AdminListingsPage() {
           Review property ownership documents and publish verified listings to the public catalog.
         </p>
       </div>
-      <AdminListingsClient listings={res.docs.map(mapListingDoc)} />
+      <AdminListingsClient listings={listings} />
     </PortalShell>
   )
 }

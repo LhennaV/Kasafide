@@ -6,15 +6,17 @@ import type { Listing, Review } from '@/payload-types'
 export default async function BuyerReviewsPage() {
   const { rawUser, user, notifications, unreadMessageCount } = await requirePortalUser()
   const payload = await getPayloadClient()
-  const revRes = await payload.find({
-    collection: 'reviews',
-    user: rawUser,
-    overrideAccess: false,
-    where: { reviewer: { equals: rawUser.id } },
-    depth: 1,
-    limit: 30,
-    sort: '-createdAt',
-  })
+  const revRes = await payload
+    .find({
+      collection: 'reviews',
+      user: rawUser,
+      overrideAccess: false,
+      where: { reviewer: { equals: rawUser.id } },
+      depth: 1,
+      limit: 30,
+      sort: '-createdAt',
+    })
+    .catch(() => ({ docs: [] }))
 
   return (
     <PortalShell

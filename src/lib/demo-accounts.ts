@@ -18,11 +18,19 @@ export {
   getDemoConfigByRole,
 }
 
+const FALLBACK_NUMERIC_IDS: Record<DemoRole, number> = {
+  buyer: 90001,
+  seller: 90002,
+  admin: 90003,
+  superadmin: 90004,
+}
+
 /** Synthesize a resilient fallback mock user object when database is inaccessible */
 export function createFallbackDemoUser(roleKey: DemoRole): User {
   const config = DEMO_ACCOUNTS[roleKey] || DEMO_ACCOUNTS.buyer
   return {
-    id: `demo-${config.key}`,
+    id: FALLBACK_NUMERIC_IDS[roleKey] || 90001,
+    collection: 'users',
     firstName: config.label.split(' ')[0],
     middleInitial: 'K',
     lastName: 'Kasafide',
@@ -58,6 +66,7 @@ export async function getOrCreateDemoUser(roleKey: DemoRole): Promise<User> {
 
     if (existing.docs.length > 0) {
       const doc = existing.docs[0] as User
+      ;(doc as unknown as { collection: string }).collection = 'users'
       // Make sure demo user has matching credentials and verified status
       try {
         await payload.update({
@@ -99,6 +108,7 @@ export async function getOrCreateDemoUser(roleKey: DemoRole): Promise<User> {
         mayaNumber: '09181234567',
       },
     })
+    ;(created as unknown as { collection: string }).collection = 'users'
     return created as User
   } catch (err) {
     console.warn(`[Kasafide Demo] Falling back to synthesized demo user for ${roleKey}:`, err)

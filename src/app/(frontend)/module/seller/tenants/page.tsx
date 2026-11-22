@@ -12,16 +12,18 @@ export default async function SellerTenantsPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const payRes = await payload.find({
-    collection: 'payments',
-    user: rawUser,
-    overrideAccess: false,
-    where: {
-      and: [{ payee: { equals: rawUser.id } }, { status: { equals: 'confirmed' } }],
-    },
-    depth: 1,
-    limit: 50,
-  })
+  const payRes = await payload
+    .find({
+      collection: 'payments',
+      user: rawUser,
+      overrideAccess: false,
+      where: {
+        and: [{ payee: { equals: rawUser.id } }, { status: { equals: 'confirmed' } }],
+      },
+      depth: 1,
+      limit: 50,
+    })
+    .catch(() => ({ docs: [] }))
 
   return (
     <PortalShell

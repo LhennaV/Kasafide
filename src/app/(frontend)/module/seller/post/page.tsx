@@ -11,13 +11,28 @@ export default async function SellerPostPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const brgyRes = await payload.find({
-    collection: 'barangays',
-    user: rawUser,
-    overrideAccess: false,
-    limit: 50,
-    sort: 'name',
-  })
+  const brgyRes = await payload
+    .find({
+      collection: 'barangays',
+      user: rawUser,
+      overrideAccess: false,
+      limit: 50,
+      sort: 'name',
+    })
+    .catch(() => ({ docs: [] }))
+
+  const fallbackBrgys = [
+    { id: '1', name: 'Pulong Buhangin' },
+    { id: '2', name: 'Poblacion' },
+    { id: '3', name: 'Caypombo' },
+    { id: '4', name: 'Santa Clara' },
+    { id: '5', name: 'Guyong' },
+  ]
+
+  const barangays =
+    brgyRes.docs.length > 0
+      ? brgyRes.docs.map((b) => ({ id: String(b.id), name: b.name }))
+      : fallbackBrgys
 
   return (
     <PortalShell
@@ -32,9 +47,7 @@ export default async function SellerPostPage() {
           All new submissions enter Kasafide Admin review to verify title authenticity before going public.
         </p>
       </div>
-      <SellerPostFormClient
-        barangays={brgyRes.docs.map((b) => ({ id: String(b.id), name: b.name }))}
-      />
+      <SellerPostFormClient barangays={barangays} />
     </PortalShell>
   )
 }

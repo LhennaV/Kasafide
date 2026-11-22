@@ -10,14 +10,17 @@ export default async function AdminAnalyticsPage() {
     'superadmin',
     'super_duper_admin',
   ])
+  const payload = await getPayloadClient()
   const [{ listings, barangays }, payRes] = await Promise.all([
     getCachedPublicMarketplace(),
-    (await getPayloadClient()).find({
-      collection: 'payments',
-      user: rawUser,
-      overrideAccess: false,
-      limit: 100,
-    }),
+    payload
+      .find({
+        collection: 'payments',
+        user: rawUser,
+        overrideAccess: false,
+        limit: 100,
+      })
+      .catch(() => ({ docs: [] })),
   ])
 
   const topBarangays = barangays

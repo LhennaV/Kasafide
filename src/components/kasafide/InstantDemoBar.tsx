@@ -35,7 +35,9 @@ export function InstantDemoBar() {
         const data = (await res.json()) as { ok?: boolean; redirectTo?: string }
         if (res.ok && data.ok) {
           await announceSessionChange(router)
-          router.push(data.redirectTo || `/module/${roleKey}`)
+          window.location.href =
+            data.redirectTo ||
+            (roleKey === 'superadmin' ? '/module/super-admin' : `/module/${roleKey}`)
         }
       } catch (err) {
         console.error('Error switching demo role:', err)
@@ -44,7 +46,7 @@ export function InstantDemoBar() {
           roleKey === 'superadmin'
             ? '/module/super-admin'
             : `/module/${roleKey}`
-        router.push(targetPath)
+        window.location.href = targetPath
       }
     })
   }

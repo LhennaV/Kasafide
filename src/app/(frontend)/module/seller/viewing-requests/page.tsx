@@ -12,15 +12,17 @@ export default async function SellerViewingRequestsPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const res = await payload.find({
-    collection: 'viewing-requests',
-    user: rawUser,
-    overrideAccess: false,
-    where: { seller: { equals: rawUser.id } },
-    depth: 1,
-    limit: 40,
-    sort: '-createdAt',
-  })
+  const res = await payload
+    .find({
+      collection: 'viewing-requests',
+      user: rawUser,
+      overrideAccess: false,
+      where: { seller: { equals: rawUser.id } },
+      depth: 1,
+      limit: 40,
+      sort: '-createdAt',
+    })
+    .catch(() => ({ docs: [] }))
 
   const rows: ViewingRow[] = res.docs.map((v: ViewingRequest) => {
     const listing = typeof v.listing === 'object' && v.listing ? (v.listing as Listing) : null

@@ -17,7 +17,7 @@ export function hasStaffReq(req: { user?: unknown }): boolean {
   const user = getReqUser(req)
   if (!user) return false
   if (user.collection === 'admins') return true
-  return user.collection === 'users' && Boolean(user.role && STAFF_ROLES.has(user.role))
+  return Boolean(user.role && STAFF_ROLES.has(user.role))
 }
 
 export const isCmsAdmin: Access = ({ req }) => {
@@ -27,7 +27,7 @@ export const isCmsAdmin: Access = ({ req }) => {
 
 export const isAppUser: Access = ({ req }) => {
   const user = getReqUser(req)
-  return user?.collection === 'users' && Boolean(user.id)
+  return Boolean(user?.id)
 }
 
 export const isAppStaff: Access = ({ req }) => {
@@ -38,22 +38,22 @@ export const isAppSuperAdmin: Access = ({ req }) => {
   const user = getReqUser(req)
   if (!user) return false
   if (user.collection === 'admins') return true
-  return user.collection === 'users' && Boolean(user.role && SUPER_ROLES.has(user.role))
+  return Boolean(user.role && SUPER_ROLES.has(user.role))
 }
 
 export const isAppStaffField: FieldAccess = ({ req }) => {
   const user = getReqUser(req)
   if (!user) return false
   if (user.collection === 'admins') return true
-  return user.collection === 'users' && Boolean(user.role && STAFF_ROLES.has(user.role))
+  return Boolean(user.role && STAFF_ROLES.has(user.role))
 }
 
 export const isSelfOrStaffField: FieldAccess = ({ req, doc }) => {
   const user = getReqUser(req)
   if (!user) return false
   if (user.collection === 'admins') return true
-  if (user.collection === 'users' && user.role && STAFF_ROLES.has(user.role)) return true
-  if (user.collection === 'users' && doc && String((doc as { id?: unknown }).id) === String(user.id)) {
+  if (user.role && STAFF_ROLES.has(user.role)) return true
+  if (doc && String((doc as { id?: unknown }).id) === String(user.id)) {
     return true
   }
   return false

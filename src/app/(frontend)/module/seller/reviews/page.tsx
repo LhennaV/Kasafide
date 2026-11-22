@@ -11,15 +11,17 @@ export default async function SellerReviewsPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const revRes = await payload.find({
-    collection: 'reviews',
-    user: rawUser,
-    overrideAccess: false,
-    where: { seller: { equals: rawUser.id } },
-    depth: 1,
-    limit: 30,
-    sort: '-createdAt',
-  })
+  const revRes = await payload
+    .find({
+      collection: 'reviews',
+      user: rawUser,
+      overrideAccess: false,
+      where: { seller: { equals: rawUser.id } },
+      depth: 1,
+      limit: 30,
+      sort: '-createdAt',
+    })
+    .catch(() => ({ docs: [] }))
 
   return (
     <PortalShell

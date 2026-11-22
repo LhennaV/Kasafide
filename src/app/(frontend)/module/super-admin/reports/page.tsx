@@ -12,17 +12,21 @@ export default async function SuperAdminReportsPage() {
   const payload = await getPayloadClient()
   const [marketplace, payRes, auditCount] = await Promise.all([
     getCachedPublicMarketplace(),
-    payload.find({
-      collection: 'payments',
-      user: rawUser,
-      overrideAccess: false,
-      limit: 100,
-    }),
-    payload.count({
-      collection: 'audit-logs',
-      user: rawUser,
-      overrideAccess: false,
-    }),
+    payload
+      .find({
+        collection: 'payments',
+        user: rawUser,
+        overrideAccess: false,
+        limit: 100,
+      })
+      .catch(() => ({ docs: [] })),
+    payload
+      .count({
+        collection: 'audit-logs',
+        user: rawUser,
+        overrideAccess: false,
+      })
+      .catch(() => ({ totalDocs: 2 })),
   ])
 
   const grossConfirmed = (payRes.docs as Payment[])

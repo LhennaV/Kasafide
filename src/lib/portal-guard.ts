@@ -36,16 +36,16 @@ export type PortalNotificationItem = {
 
 function resolveDemoRoleForAllowed(allowedRoles?: Array<User['role']>, fallback: DemoRole = 'buyer'): DemoRole {
   if (!allowedRoles || allowedRoles.length === 0) return fallback
-  if (allowedRoles.includes('superadmin') || allowedRoles.includes('super_duper_admin')) {
-    return 'superadmin'
-  }
-  if (allowedRoles.includes('admin')) {
-    return 'admin'
-  }
-  if (allowedRoles.includes('seller') && !allowedRoles.includes('buyer')) {
-    return 'seller'
-  }
-  return 'buyer'
+  const primary = allowedRoles[0]
+  if (primary === 'seller') return 'seller'
+  if (primary === 'admin') return 'admin'
+  if (primary === 'superadmin' || primary === 'super_duper_admin') return 'superadmin'
+  if (primary === 'buyer') return 'buyer'
+
+  if (allowedRoles.includes('seller') && !allowedRoles.includes('buyer')) return 'seller'
+  if (allowedRoles.includes('admin')) return 'admin'
+  if (allowedRoles.includes('superadmin') || allowedRoles.includes('super_duper_admin')) return 'superadmin'
+  return fallback
 }
 
 export async function requirePortalUser(allowedRoles?: Array<User['role']>) {
@@ -56,9 +56,12 @@ export async function requirePortalUser(allowedRoles?: Array<User['role']>) {
   // 1. INSTANT DEMO PREVIEW: If not signed in, auto-provision and render the appropriate demo user!
   // No sign-in or sign-up needed!
   if (!user) {
-    const targetRole = demoRoleCookie && DEMO_ACCOUNTS[demoRoleCookie]
-      ? demoRoleCookie
-      : resolveDemoRoleForAllowed(allowedRoles, 'buyer')
+    const targetRole =
+      demoRoleCookie &&
+      DEMO_ACCOUNTS[demoRoleCookie] &&
+      (!allowedRoles || allowedRoles.includes(DEMO_ACCOUNTS[demoRoleCookie].role))
+        ? demoRoleCookie
+        : resolveDemoRoleForAllowed(allowedRoles, 'buyer')
 
     user = await getOrCreateDemoUser(targetRole)
   } else if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -66,6 +69,7 @@ export async function requirePortalUser(allowedRoles?: Array<User['role']>) {
     const isDemo =
       user.email.endsWith('@kasafide.ph') ||
       String(user.id).startsWith('demo-') ||
+      (typeof user.id === 'number' && user.id >= 90000) ||
       Boolean(demoRoleCookie)
 
     if (isDemo) {
@@ -74,6 +78,11 @@ export async function requirePortalUser(allowedRoles?: Array<User['role']>) {
     } else {
       redirect(getRoleHomePath(user.role))
     }
+  }
+
+  // Ensure collection property is present for Payload access checks
+  if (!('collection' in user) || !(user as unknown as { collection?: string }).collection) {
+    ;(user as unknown as { collection: string }).collection = 'users'
   }
 
   // 3. Resiliently fetch notifications and message counts

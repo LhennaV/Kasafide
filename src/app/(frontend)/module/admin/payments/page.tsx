@@ -11,14 +11,16 @@ export default async function AdminPaymentsPage() {
     'super_duper_admin',
   ])
   const payload = await getPayloadClient()
-  const res = await payload.find({
-    collection: 'payments',
-    user: rawUser,
-    overrideAccess: false,
-    depth: 1,
-    limit: 100,
-    sort: '-createdAt',
-  })
+  const res = await payload
+    .find({
+      collection: 'payments',
+      user: rawUser,
+      overrideAccess: false,
+      depth: 1,
+      limit: 100,
+      sort: '-createdAt',
+    })
+    .catch(() => ({ docs: [] }))
 
   return (
     <PortalShell
