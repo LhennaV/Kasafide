@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { DEMO_ROLES_LIST, type DemoRole } from '@/lib/demo-accounts'
+import { DEMO_ROLES_LIST, type DemoRole } from '@/lib/demo-constants'
 import { announceSessionChange } from '@/lib/app-session-browser'
 
 export function InstantDemoBar() {
