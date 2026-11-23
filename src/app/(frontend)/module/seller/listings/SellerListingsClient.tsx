@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { sellerUpdateListingAvailabilityAction } from '@/app/actions/kasafide'
 import type { ListingCardView } from '@/lib/kasafide-data'
+import { withToast } from '@/lib/toast'
 
 export function SellerListingsClient({ listings }: { listings: ListingCardView[] }) {
   const router = useRouter()
@@ -84,10 +85,10 @@ export function SellerListingsClient({ listings }: { listings: ListingCardView[]
                       onClick={() => {
                         const next = Math.max(0, item.availableUnits - 1)
                         startTransition(async () => {
-                          await sellerUpdateListingAvailabilityAction({
+                          await withToast(sellerUpdateListingAvailabilityAction({
                             listingId: item.id,
                             availableUnits: next,
-                          })
+                          }))
                           router.refresh()
                         })
                       }}
@@ -102,10 +103,10 @@ export function SellerListingsClient({ listings }: { listings: ListingCardView[]
                       disabled={isPending}
                       onClick={() => {
                         startTransition(async () => {
-                          await sellerUpdateListingAvailabilityAction({
+                          await withToast(sellerUpdateListingAvailabilityAction({
                             listingId: item.id,
                             closeListing: true,
-                          })
+                          }))
                           router.refresh()
                         })
                       }}

@@ -8,6 +8,8 @@ import { announceSessionChange, signOutInPlace } from '@/lib/app-session-browser
 import type { PortalNotificationItem, PortalUserSummary } from '@/lib/portal-guard'
 import { KasafideLogo } from './KasafideLogo'
 import { ThemeToggle } from './ThemeToggle'
+import { Toaster } from './Toaster'
+import { withToast } from '@/lib/toast'
 
 type NavItem = {
   id: string
@@ -389,7 +391,7 @@ export function PortalShell({
                         disabled={isPending}
                         onClick={() => {
                           startTransition(async () => {
-                            await markAllNotificationsReadAction()
+                            await withToast(markAllNotificationsReadAction())
                             router.refresh()
                           })
                         }}
@@ -637,6 +639,8 @@ export function PortalShell({
           </div>
         </div>
       )}
+
+      <Toaster />
     </div>
   )
 }

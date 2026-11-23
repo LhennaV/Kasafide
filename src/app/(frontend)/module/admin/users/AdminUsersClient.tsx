@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { adminModerateUserAction } from '@/app/actions/kasafide'
+import { withToast } from '@/lib/toast'
 
 export type AdminUserRow = {
   id: string
@@ -93,10 +94,10 @@ export function AdminUsersClient({ rows }: { rows: AdminUserRow[] }) {
                         disabled={isPending}
                         onClick={() => {
                           startTransition(async () => {
-                            await adminModerateUserAction({
+                            await withToast(adminModerateUserAction({
                               targetUserId: u.id,
                               accountStatus: 'verified',
-                            })
+                            }))
                             router.refresh()
                           })
                         }}
@@ -112,10 +113,10 @@ export function AdminUsersClient({ rows }: { rows: AdminUserRow[] }) {
                           disabled={isPending}
                           onClick={() => {
                             startTransition(async () => {
-                              await adminModerateUserAction({
+                              await withToast(adminModerateUserAction({
                                 targetUserId: u.id,
                                 accountStatus: 'suspended',
-                              })
+                              }))
                               router.refresh()
                             })
                           }}

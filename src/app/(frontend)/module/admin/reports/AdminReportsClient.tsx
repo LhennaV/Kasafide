@@ -3,6 +3,7 @@
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { adminResolveReportAction } from '@/app/actions/kasafide'
+import { withToast } from '@/lib/toast'
 
 export type ReportRow = {
   id: string
@@ -58,11 +59,11 @@ export function AdminReportsClient({ rows }: { rows: ReportRow[] }) {
                       disabled={isPending}
                       onClick={() => {
                         startTransition(async () => {
-                          await adminResolveReportAction({
+                          await withToast(adminResolveReportAction({
                             reportId: r.id,
                             status: 'resolved',
                             resolutionNotes: 'Reviewed and resolved by Kasafide Moderator.',
-                          })
+                          }))
                           router.refresh()
                         })
                       }}
@@ -75,10 +76,10 @@ export function AdminReportsClient({ rows }: { rows: ReportRow[] }) {
                       disabled={isPending}
                       onClick={() => {
                         startTransition(async () => {
-                          await adminResolveReportAction({
+                          await withToast(adminResolveReportAction({
                             reportId: r.id,
                             status: 'dismissed',
-                          })
+                          }))
                           router.refresh()
                         })
                       }}

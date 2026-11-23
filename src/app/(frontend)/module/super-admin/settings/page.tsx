@@ -1,6 +1,9 @@
 import { requirePortalUser } from '@/lib/portal-guard'
 import { PortalShell } from '@/components/kasafide/PortalShell'
-import { AccountSettingsForm } from '@/components/kasafide/ProfileSettingsForms'
+import {
+  AccountSettingsForm,
+  ChangePasswordForm,
+} from '@/components/kasafide/ProfileSettingsForms'
 
 export default async function SuperAdminSettingsPage() {
   const { user, notifications, unreadMessageCount } = await requirePortalUser([
@@ -15,7 +18,10 @@ export default async function SuperAdminSettingsPage() {
       unreadMessageCount={unreadMessageCount}
     >
       <h1 className="text-2xl sm:text-3xl font-black mb-5">Super Admin Settings</h1>
-      <AccountSettingsForm user={user} />
+      <div className="space-y-6">
+        <AccountSettingsForm user={user} />
+        <ChangePasswordForm isDemo={Boolean(user.isDemo)} />
+      </div>
     </PortalShell>
   )
 }

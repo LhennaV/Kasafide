@@ -1,6 +1,9 @@
 import { requirePortalUser } from '@/lib/portal-guard'
 import { PortalShell } from '@/components/kasafide/PortalShell'
-import { AccountSettingsForm } from '@/components/kasafide/ProfileSettingsForms'
+import {
+  AccountSettingsForm,
+  ChangePasswordForm,
+} from '@/components/kasafide/ProfileSettingsForms'
 
 export default async function SellerSettingsPage() {
   const { user, notifications, unreadMessageCount } = await requirePortalUser([
@@ -17,7 +20,10 @@ export default async function SellerSettingsPage() {
       unreadMessageCount={unreadMessageCount}
     >
       <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] mb-5">Seller Settings</h1>
-      <AccountSettingsForm user={user} />
+      <div className="space-y-6">
+        <AccountSettingsForm user={user} />
+        <ChangePasswordForm isDemo={Boolean(user.isDemo)} />
+      </div>
     </PortalShell>
   )
 }
