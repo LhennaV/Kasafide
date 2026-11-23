@@ -3,6 +3,8 @@ import type { Metadata, Viewport } from "next"
 import { Plus_Jakarta_Sans } from "next/font/google"
 import Script from "next/script"
 import { InstantDemoBar } from "@/components/kasafide/InstantDemoBar"
+import { SystemTheme } from "@/components/kasafide/SystemTheme"
+import { THEME_INIT_SCRIPT } from "@/lib/theme-script"
 import "./styles.css"
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -69,7 +71,7 @@ export default function RootLayout({
           id="theme-init"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('kf_theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
+            __html: THEME_INIT_SCRIPT,
           }}
         />
       </head>
@@ -81,6 +83,7 @@ export default function RootLayout({
           {children}
         </div>
         <InstantDemoBar />
+        <SystemTheme />
       </body>
     </html>
   )

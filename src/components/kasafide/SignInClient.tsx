@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { announceSessionChange } from '@/lib/app-session-browser'
 import { GoogleAuthButton } from './GoogleAuthButton'
 import { KasafideLogo } from './KasafideLogo'
-import { ThemeToggle } from './ThemeToggle'
 
 export function SignInClient() {
   const router = useRouter()
@@ -83,10 +82,6 @@ export function SignInClient() {
           className="object-cover opacity-25 blur-xl scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg)]/90 via-[var(--surface)]/75 to-[var(--bg)]/90" />
-      </div>
-
-      <div className="absolute top-4 right-4 z-20">
-        <ThemeToggle />
       </div>
 
       {/* Left Marketing Tagline (Desktop, preserved from signin.html) */}

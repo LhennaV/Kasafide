@@ -6,14 +6,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { authSession, signOutInPlace } from '@/lib/app-session-browser'
 import { KasafideLogo } from './KasafideLogo'
-import { ThemeToggle } from './ThemeToggle'
 
 const LINKS = [
   { label: 'Home', href: '/', key: 'home' },
   { label: 'Listings', href: '/#featured', key: 'featured' },
   { label: 'How it works', href: '/#how-it-works', key: 'how' },
-  { label: 'Browse', href: '/browse', key: 'browse' },
-  { label: 'About', href: '/about', key: 'about' },
 ]
 
 function rolePortalHref(role?: string): string {
@@ -134,8 +131,6 @@ export function PublicNavbar({ activePage = 'home' }: { activePage?: string }) {
                 </div>
               </div>
             </div>
-
-            <ThemeToggle className="w-9 h-9" />
 
             {signedInUser ? (
               <div className="hidden sm:flex items-center gap-2">

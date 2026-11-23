@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { BarangayPinView, ListingCardView } from '@/lib/kasafide-data'
 import { PropertyCard } from './PropertyCard'
+import { HowItWorksTimeline } from './HowItWorksTimeline'
 import { StaMariaMapSection } from './StaMariaMapSection'
 
 const CATEGORIES = [
@@ -397,137 +398,7 @@ export function HomeLandingClient({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 flex flex-col justify-between gap-5">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-1 rounded-lg bg-[var(--primary)] text-[var(--on-primary)] text-xs font-black">
-                  01
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                  Account
-                </span>
-              </div>
-              <h3 className="text-xl font-extrabold text-[var(--text)] mb-1.5">Create an Account</h3>
-              <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                Sign up as a buyer or seller via email or Google Sign-In. Verify your identity so the person on the other side knows who they are dealing with.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4">
-              <div className="flex items-center gap-1.5 mb-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#FF8A8A]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#F4BC5C]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#6FD394]" />
-                <span className="ml-2 text-[11px] font-bold text-[var(--text-muted)]">Verification</span>
-              </div>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-[var(--surface)]">
-                  <span className="font-bold text-[var(--text)]">Valid Government ID</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[var(--success)]/15 text-[var(--success)] font-bold">
-                    Approved
-                  </span>
-                </div>
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-[var(--surface)]">
-                  <span className="font-bold text-[var(--text)]">Live Camera Selfie</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[var(--success)]/15 text-[var(--success)] font-bold">
-                    Verified Seller
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 flex flex-col justify-between gap-5">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-1 rounded-lg bg-[var(--primary)] text-[var(--on-primary)] text-xs font-black">
-                  02
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                  Discover
-                </span>
-              </div>
-              <h3 className="text-xl font-extrabold text-[var(--text)] mb-1.5">Browse or List</h3>
-              <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                Search by barangay, budget, and property type across Sta. Maria — or post your own titled property and let verified buyers come to you.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4">
-              <div className="flex items-center gap-1.5 mb-3">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#FF8A8A]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#F4BC5C]" />
-                <span className="w-2.5 h-2.5 rounded-full bg-[#6FD394]" />
-                <span className="ml-2 text-[11px] font-bold text-[var(--text-muted)]">Browse</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5 mb-2.5 text-[11px] font-bold">
-                <span className="px-2.5 py-1 rounded-full bg-[var(--surface)] text-[var(--primary)]">Poblacion</span>
-                <span className="px-2.5 py-1 rounded-full bg-[var(--surface)] text-[var(--text)]">Up to ₱20,000</span>
-                <span className="px-2.5 py-1 rounded-full bg-[var(--surface)] text-[var(--text)]">Apartment</span>
-              </div>
-              <div className="p-2.5 rounded-xl bg-[var(--surface)] flex items-center justify-between text-xs">
-                <div>
-                  <div className="font-extrabold text-[var(--text)]">2BR Apartment &middot; Poblacion</div>
-                  <div className="text-[var(--text-muted)]">2 beds &middot; 1 bath &middot; 54 sqm</div>
-                </div>
-                <span className="font-extrabold text-[var(--primary)]">₱12,500/mo</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 flex flex-col justify-between gap-5">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-1 rounded-lg bg-[var(--primary)] text-[var(--on-primary)] text-xs font-black">
-                  03
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                  Connect
-                </span>
-              </div>
-              <h3 className="text-xl font-extrabold text-[var(--text)] mb-1.5">Message the Owner</h3>
-              <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                Talk to the seller inside Kasafide. Arrange a viewing, ask about utilities, and keep the entire thread recorded safely.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4 space-y-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-[var(--surface)] max-w-[82%] text-[var(--text)]">
-                Hi! Is the 2BR unit in Poblacion still open for Saturday viewing?
-              </div>
-              <div className="p-2.5 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-semibold max-w-[82%] ml-auto">
-                Yes! Viewing Request Accepted &middot; Sat 10:00 AM
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 flex flex-col justify-between gap-5">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-1 rounded-lg bg-[var(--primary)] text-[var(--on-primary)] text-xs font-black">
-                  04
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-                  Payment
-                </span>
-              </div>
-              <h3 className="text-xl font-extrabold text-[var(--text)] mb-1.5">Pay &amp; Move In</h3>
-              <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                Pay via QR Ph or upload GCash/Maya proof. The verified landowner confirms receipt and both sides keep an immutable payment record.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-4 flex items-center justify-between text-xs">
-              <div>
-                <div className="font-extrabold text-[var(--text)]">2BR Apartment — Poblacion</div>
-                <div className="text-[var(--text-muted)] mt-0.5">GCash &middot; Ref KF-GC-78452</div>
-              </div>
-              <div className="text-right">
-                <div className="font-black text-sm text-[var(--primary)]">₱12,500</div>
-                <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-[var(--success)]/15 text-[var(--success)] font-bold">
-                  Confirmed
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <HowItWorksTimeline />
       </section>
 
       <section className="py-16 px-4 bg-gradient-to-r from-[#5B3A8E]/20 via-[#FF8A65]/10 to-[#5B3A8E]/20 border-y border-[var(--border)]">
