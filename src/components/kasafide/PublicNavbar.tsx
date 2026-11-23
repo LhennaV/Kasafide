@@ -1,17 +1,124 @@
 'use client'
 
-import { useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { authSession, signOutInPlace } from '@/lib/app-session-browser'
 import { KasafideLogo } from './KasafideLogo'
 
+// `key` is the landing-page section the link belongs to ('top' = the hero).
 const LINKS = [
-  { label: 'Home', href: '/', key: 'home' },
+  { label: 'Home', href: '/', key: 'top' },
   { label: 'Listings', href: '/#featured', key: 'featured' },
-  { label: 'How it works', href: '/#how-it-works', key: 'how' },
+  { label: 'How it works', href: '/#how-it-works', key: 'how-it-works' },
 ]
+
+// Sections the highlight follows on the landing page. Listings stays lit through Browse by Type
+// and the map, How it works until the Browse section; past that nothing in the bar is lit.
+const SPY_SECTIONS = ['featured', 'how-it-works', 'browse']
+
+/** Which landing section is under the top third of the screen, re-checked once per frame. */
+function useScrollSection(enabled: boolean): string | null {
+  const [active, setActive] = useState<string | null>(enabled ? 'top' : null)
+  useEffect(() => {
+    if (!enabled) {
+      setActive(null)
+      return
+    }
+    let queued = false
+    const update = () => {
+      queued = false
+      const line = window.innerHeight * 0.35
+      let cur = 'top'
+      for (const id of SPY_SECTIONS) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= line) cur = id
+      }
+      setActive(cur)
+    }
+    const onScroll = () => {
+      if (!queued) {
+        queued = true
+        requestAnimationFrame(update)
+      }
+    }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [enabled])
+  return active
+}
+
+/**
+ * The links sit straight on the glass bar (no box of their own), with one soft pill behind them
+ * that slides to the section you scroll into, to the link under the pointer while hovering, and
+ * back when the pointer leaves.
+ */
+function NavLinks() {
+  const pathname = usePathname()
+  const active = useScrollSection(pathname === '/')
+  const boxRef = useRef<HTMLDivElement>(null)
+  const [hover, setHover] = useState<string | null>(null)
+  const [pill, setPill] = useState<{ x: number; w: number } | null>(null)
+  const target = hover ?? active
+
+  useEffect(() => {
+    const box = boxRef.current
+    if (!box) return
+    const measure = () => {
+      const a = target ? box.querySelector<HTMLElement>(`[data-key="${target}"]`) : null
+      setPill(a ? { x: a.offsetLeft, w: a.offsetWidth } : null)
+    }
+    measure()
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null
+    ro?.observe(box)
+    document.fonts?.ready.then(measure).catch(() => {})
+    return () => ro?.disconnect()
+  }, [target])
+
+  return (
+    <div
+      ref={boxRef}
+      className="hidden lg:flex relative items-center gap-1"
+      onMouseLeave={() => setHover(null)}
+    >
+      <span
+        aria-hidden="true"
+        className="absolute left-0 top-1/2 h-8 -mt-4 rounded-full bg-[var(--primary)]/15 shadow-[inset_0_0_0_1px_rgb(var(--primary-rgb)/0.28)] pointer-events-none transition-[transform,width,opacity] duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-opacity"
+        style={
+          pill
+            ? { transform: `translateX(${pill.x}px)`, width: `${pill.w}px`, opacity: 1 }
+            : { opacity: 0 }
+        }
+      />
+      {LINKS.map((item) => {
+        const on = item.key === active
+        const lit = item.key === target
+        return (
+          <Link
+            key={item.key}
+            href={item.href}
+            data-key={item.key}
+            aria-current={on ? 'location' : undefined}
+            onMouseEnter={() => setHover(item.key)}
+            onFocus={() => setHover(item.key)}
+            onBlur={() => setHover(null)}
+            className={`relative z-[1] px-3.5 py-[7px] rounded-full text-[13.5px] whitespace-nowrap transition-colors duration-300 ${
+              lit ? 'text-[var(--text)]' : 'text-[var(--text-soft)]'
+            } ${on ? 'font-bold' : 'font-semibold'}`}
+          >
+            {item.label}
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
 
 function rolePortalHref(role?: string): string {
   switch (role) {
@@ -64,25 +171,7 @@ export function PublicNavbar({ activePage = 'home' }: { activePage?: string }) {
             <span>Kasafide</span>
           </Link>
 
-          {/* Desktop Center Nav Pills */}
-          <div className="hidden md:flex items-center gap-1 bg-[var(--bg)]/45 border border-[var(--border)]/60 rounded-full p-1">
-            {LINKS.map((item) => {
-              const isActive = item.key === activePage
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  className={`px-3.5 py-1.5 rounded-full text-[13px] font-semibold transition ${
-                    isActive
-                      ? 'bg-[var(--primary)] text-[var(--on-primary)] shadow-sm'
-                      : 'text-[var(--text-soft)] hover:text-[var(--text)]'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
-          </div>
+          <NavLinks />
 
           {/* Right Actions: Theme + Demo Roles + Sign In + Sign Up (or Role Portal) */}
           <div className="flex items-center gap-2">
@@ -170,7 +259,7 @@ export function PublicNavbar({ activePage = 'home' }: { activePage?: string }) {
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label="Open mobile navigation"
-              className="md:hidden w-9 h-9 rounded-full border border-[var(--border)] bg-[var(--surface)] flex items-center justify-center text-[var(--text)] cursor-pointer"
+              className="lg:hidden w-9 h-9 rounded-full border border-[var(--border)] bg-[var(--surface)] flex items-center justify-center text-[var(--text)] cursor-pointer"
             >
               <svg
                 width="18"
@@ -200,7 +289,7 @@ export function PublicNavbar({ activePage = 'home' }: { activePage?: string }) {
 
         {/* Mobile Dropdown Sheet */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-2 rounded-3xl kf-glass-pill p-4 shadow-2xl">
+          <div className="lg:hidden mt-2 rounded-3xl kf-glass-pill p-4 shadow-2xl">
             <div className="flex flex-col gap-1 mb-3">
               {LINKS.map((item) => (
                 <Link
@@ -208,7 +297,7 @@ export function PublicNavbar({ activePage = 'home' }: { activePage?: string }) {
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`px-4 py-2.5 rounded-xl text-sm font-semibold ${
-                    item.key === activePage
+                    item.key === (activePage === 'home' ? 'top' : activePage)
                       ? 'bg-[var(--primary)] text-[var(--on-primary)]'
                       : 'text-[var(--text)] hover:bg-[var(--surface-soft)]'
                   }`}
