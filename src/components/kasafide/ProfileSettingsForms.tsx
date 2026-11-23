@@ -3,10 +3,14 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
+  changePasswordAction,
   submitIdentityVerificationAction,
   updateProfileSettingsAction,
 } from '@/app/actions/kasafide'
 import type { PortalUserSummary } from '@/lib/portal-guard'
+import { toast } from '@/lib/toast'
+
+const FAILED = { ok: false, error: 'Could not reach the server. Please try again.' } as const
 
 export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
   const router = useRouter()
@@ -18,7 +22,6 @@ export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
   const [bio, setBio] = useState(user.bio)
   const [gcashNumber, setGcashNumber] = useState(user.gcashNumber)
   const [mayaNumber, setMayaNumber] = useState(user.mayaNumber)
-  const [msg, setMsg] = useState<string | null>(null)
 
   return (
     <form
@@ -33,18 +36,13 @@ export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
             bio,
             gcashNumber,
             mayaNumber,
-          })
-          setMsg(res.message || res.error || 'Saved')
-          router.refresh()
+          }).catch(() => FAILED)
+          toast.result(res, 'Saved')
+          if (res.ok) router.refresh()
         })
       }}
       className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 max-w-2xl"
     >
-      {msg && (
-        <div className="p-3 rounded-xl bg-[var(--primary)]/15 text-[var(--primary)] text-xs font-bold">
-          {msg}
-        </div>
-      )}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-bold mb-1">First Name</label>
@@ -154,7 +152,6 @@ export function IdentityVerificationForm({
   const [idType, setIdType] = useState<'drivers_license' | 'passport' | 'philid' | 'umid' | 'postal_id'>('philid')
   const [last4, setLast4] = useState('')
   const [selfieReady, setSelfieReady] = useState(false)
-  const [statusMsg, setStatusMsg] = useState<string | null>(null)
 
   return (
     <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 max-w-xl space-y-5">
@@ -172,12 +169,6 @@ export function IdentityVerificationForm({
           {currentStatus}
         </span>
       </div>
-
-      {statusMsg && (
-        <div className="p-3.5 rounded-xl bg-[var(--success)]/15 text-[var(--success)] text-xs font-bold">
-          {statusMsg}
-        </div>
-      )}
 
       <div>
         <label className="block text-xs font-bold mb-1.5">Step 1 &middot; Select Valid Philippine Government ID</label>
@@ -234,9 +225,9 @@ export function IdentityVerificationForm({
             const res = await submitIdentityVerificationAction({
               idType,
               idNumberLast4: last4 || '1234',
-            })
-            setStatusMsg(res.message || 'Submitted!')
-            router.refresh()
+            }).catch(() => FAILED)
+            toast.result(res, 'Submitted!')
+            if (res.ok) router.refresh()
           })
         }}
         className="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer disabled:opacity-45"
@@ -244,5 +235,125 @@ export function IdentityVerificationForm({
         {isPending ? 'Submitting…' : 'Submit for Admin Verification'}
       </button>
     </div>
+  )
+}
+
+const PASSWORD_MIN = 8
+
+export function ChangePasswordForm({ isDemo = false }: { isDemo?: boolean }) {
+  const [isPending, startTransition] = useTransition()
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [show, setShow] = useState(false)
+  const [error, setError] = useState('')
+
+  const inputClass =
+    'w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm'
+
+  if (isDemo) {
+    return (
+      <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 max-w-2xl">
+        <h2 className="text-base font-extrabold text-[var(--text)]">Change Password</h2>
+        <p className="text-sm text-[var(--text-muted)] mt-1">
+          Demo accounts are shared, so their password can&apos;t be changed.
+        </p>
+      </section>
+    )
+  }
+
+  return (
+    <form
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault()
+        setError('')
+        if (!current) return setError('Enter your current password.')
+        if (next.length < PASSWORD_MIN) return setError(`Use at least ${PASSWORD_MIN} characters.`)
+        if (next !== confirm) return setError('The new passwords do not match.')
+        startTransition(async () => {
+          const res = await changePasswordAction({
+            currentPassword: current,
+            newPassword: next,
+          }).catch(() => FAILED)
+          if (!res.ok) {
+            setError(res.error || 'Could not update your password.')
+            return
+          }
+          toast.success(res.message || 'Password updated.')
+          setCurrent('')
+          setNext('')
+          setConfirm('')
+        })
+      }}
+      className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 max-w-2xl"
+    >
+      <div>
+        <h2 className="text-base font-extrabold text-[var(--text)]">Change Password</h2>
+        <p className="text-xs text-[var(--text-muted)] mt-1">
+          Use at least {PASSWORD_MIN} characters. You&apos;ll stay signed in on this device.
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="currentPassword" className="block text-xs font-bold mb-1">
+          Current Password
+        </label>
+        <input
+          id="currentPassword"
+          type={show ? 'text' : 'password'}
+          autoComplete="current-password"
+          value={current}
+          onChange={(e) => setCurrent(e.target.value)}
+          className={inputClass}
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label htmlFor="newPassword" className="block text-xs font-bold mb-1">
+            New Password
+          </label>
+          <input
+            id="newPassword"
+            type={show ? 'text' : 'password'}
+            autoComplete="new-password"
+            value={next}
+            onChange={(e) => setNext(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+        <div>
+          <label htmlFor="confirmNewPassword" className="block text-xs font-bold mb-1">
+            Confirm New Password
+          </label>
+          <input
+            id="confirmNewPassword"
+            type={show ? 'text' : 'password'}
+            autoComplete="new-password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+      </div>
+      <label className="flex items-center gap-2 text-xs font-bold text-[var(--text-muted)] cursor-pointer">
+        <input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} />
+        Show passwords
+      </label>
+
+      {error && (
+        <p role="alert" className="text-xs font-bold text-[var(--danger)]">
+          {error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={isPending}
+        className="px-6 py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer disabled:opacity-60"
+      >
+        {isPending ? 'Updating…' : 'Update Password'}
+      </button>
+    </form>
   )
 }

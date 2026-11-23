@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { updateViewingStatusAction } from '@/app/actions/kasafide'
+import { withToast } from '@/lib/toast'
 
 export type ViewingRow = {
   id: string
@@ -68,10 +69,10 @@ export function ViewingRequestsClient({ rows }: { rows: ViewingRow[] }) {
                           disabled={isPending}
                           onClick={() => {
                             startTransition(async () => {
-                              await updateViewingStatusAction({
+                              await withToast(updateViewingStatusAction({
                                 viewingId: r.id,
                                 status: 'accepted',
-                              })
+                              }))
                               router.refresh()
                             })
                           }}
@@ -84,10 +85,10 @@ export function ViewingRequestsClient({ rows }: { rows: ViewingRow[] }) {
                           disabled={isPending}
                           onClick={() => {
                             startTransition(async () => {
-                              await updateViewingStatusAction({
+                              await withToast(updateViewingStatusAction({
                                 viewingId: r.id,
                                 status: 'declined',
-                              })
+                              }))
                               router.refresh()
                             })
                           }}
@@ -103,10 +104,10 @@ export function ViewingRequestsClient({ rows }: { rows: ViewingRow[] }) {
                         disabled={isPending}
                         onClick={() => {
                           startTransition(async () => {
-                            await updateViewingStatusAction({
+                            await withToast(updateViewingStatusAction({
                               viewingId: r.id,
                               status: 'completed',
-                            })
+                            }))
                             router.refresh()
                           })
                         }}

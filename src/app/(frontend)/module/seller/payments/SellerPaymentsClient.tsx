@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { decidePaymentAction } from '@/app/actions/kasafide'
 import { formatPeso } from '@/lib/format'
 import type { PaymentRowView } from '../../buyer/payments/BuyerPaymentsClient'
+import { withToast } from '@/lib/toast'
 
 export function SellerPaymentsClient({ rows }: { rows: PaymentRowView[] }) {
   const router = useRouter()
@@ -57,10 +58,10 @@ export function SellerPaymentsClient({ rows }: { rows: PaymentRowView[] }) {
                           disabled={isPending}
                           onClick={() => {
                             startTransition(async () => {
-                              await decidePaymentAction({
+                              await withToast(decidePaymentAction({
                                 paymentId: r.id,
                                 decision: 'confirmed',
-                              })
+                              }))
                               router.refresh()
                             })
                           }}
@@ -73,10 +74,10 @@ export function SellerPaymentsClient({ rows }: { rows: PaymentRowView[] }) {
                           disabled={isPending}
                           onClick={() => {
                             startTransition(async () => {
-                              await decidePaymentAction({
+                              await withToast(decidePaymentAction({
                                 paymentId: r.id,
                                 decision: 'rejected',
-                              })
+                              }))
                               router.refresh()
                             })
                           }}
@@ -92,10 +93,10 @@ export function SellerPaymentsClient({ rows }: { rows: PaymentRowView[] }) {
                         disabled={isPending}
                         onClick={() => {
                           startTransition(async () => {
-                            await decidePaymentAction({
+                            await withToast(decidePaymentAction({
                               paymentId: r.id,
                               decision: 'refunded',
-                            })
+                            }))
                             router.refresh()
                           })
                         }}

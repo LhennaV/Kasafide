@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { sendMessageAction } from '@/app/actions/kasafide'
+import { withToast } from '@/lib/toast'
 
 export type ThreadView = {
   partnerId: string
@@ -43,12 +44,12 @@ export function MessengerWorkspace({
     const text = draft
     setDraft('')
     startTransition(async () => {
-      await sendMessageAction({
+      await withToast(sendMessageAction({
         recipientId: activeThread.partnerId,
         listingId: activeThread.listingId,
         body: text,
         messageType: 'text',
-      })
+      }), { quiet: true })
       router.refresh()
     })
   }
@@ -59,13 +60,13 @@ export function MessengerWorkspace({
     setRequestAmount('')
     setShowPayPrompt(false)
     startTransition(async () => {
-      await sendMessageAction({
+      await withToast(sendMessageAction({
         recipientId: activeThread.partnerId,
         listingId: activeThread.listingId,
         body: `In-chat payment request of ₱${amt.toLocaleString('en-PH')} for ${activeThread.listingTitle || 'property rental'}.`,
         messageType: 'payment_request',
         requestedAmount: amt,
-      })
+      }), { quiet: true })
       router.refresh()
     })
   }

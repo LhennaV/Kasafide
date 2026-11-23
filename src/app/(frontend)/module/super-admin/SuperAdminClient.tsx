@@ -6,6 +6,7 @@ import {
   adminModerateUserAction,
   superAdminCreateAdminAction,
 } from '@/app/actions/kasafide'
+import { withToast } from '@/lib/toast'
 
 export type SuperAdminRow = {
   id: string
@@ -90,10 +91,10 @@ export function SuperAdminAdminsManager({ admins }: { admins: SuperAdminRow[] })
                     disabled={isPending}
                     onClick={() => {
                       startTransition(async () => {
-                        await adminModerateUserAction({
+                        await withToast(adminModerateUserAction({
                           targetUserId: a.id,
                           accountStatus: a.accountStatus === 'suspended' ? 'verified' : 'suspended',
-                        })
+                        }))
                         router.refresh()
                       })
                     }}

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { adminModerateListingAction } from '@/app/actions/kasafide'
 import type { ListingCardView } from '@/lib/kasafide-data'
+import { withToast } from '@/lib/toast'
 
 export function AdminListingsClient({ listings }: { listings: ListingCardView[] }) {
   const router = useRouter()
@@ -91,11 +92,11 @@ export function AdminListingsClient({ listings }: { listings: ListingCardView[] 
                         disabled={isPending}
                         onClick={() => {
                           startTransition(async () => {
-                            await adminModerateListingAction({
+                            await withToast(adminModerateListingAction({
                               listingId: l.id,
                               status: 'approved',
                               titleVerified: true,
-                            })
+                            }))
                             router.refresh()
                           })
                         }}

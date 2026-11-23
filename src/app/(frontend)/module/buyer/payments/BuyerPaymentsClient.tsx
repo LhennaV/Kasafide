@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { decidePaymentAction } from '@/app/actions/kasafide'
 import { formatPeso } from '@/lib/format'
+import { withToast } from '@/lib/toast'
 
 export type PaymentRowView = {
   id: string
@@ -75,10 +76,10 @@ export function BuyerPaymentsClient({ rows }: { rows: PaymentRowView[] }) {
                       disabled={isPending}
                       onClick={() => {
                         startTransition(async () => {
-                          await decidePaymentAction({
+                          await withToast(decidePaymentAction({
                             paymentId: r.id,
                             decision: 'refund_requested',
-                          })
+                          }))
                           router.refresh()
                         })
                       }}

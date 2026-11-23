@@ -457,6 +457,63 @@ export async function updateProfileSettingsAction(input: {
   return { ok: true, message: 'Profile and payment details saved!' }
 }
 
+const MIN_PASSWORD_LENGTH = 8
+
+export async function changePasswordAction(input: {
+  currentPassword: string
+  newPassword: string
+}): Promise<ActionResult> {
+  const user = await appAuth.getCurrentUser()
+  if (!user) return { ok: false, error: 'Please sign in again.' }
+
+  if (user.email.endsWith('@kasafide.ph')) {
+    return { ok: false, error: 'Demo accounts are shared, so their password cannot be changed.' }
+  }
+  if (user.authProvider === 'google') {
+    return {
+      ok: false,
+      error: 'You sign in with Google, so there is no Kasafide password to change.',
+    }
+  }
+
+  const currentPassword = String(input.currentPassword ?? '')
+  const newPassword = String(input.newPassword ?? '')
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+    return { ok: false, error: `Use at least ${MIN_PASSWORD_LENGTH} characters for the new password.` }
+  }
+  if (newPassword.length > 256) {
+    return { ok: false, error: 'That password is too long.' }
+  }
+  if (newPassword === currentPassword) {
+    return { ok: false, error: 'The new password must be different from the current one.' }
+  }
+
+  const payload = await getPayloadClient()
+
+  // Prove the person at the keyboard knows the current password before replacing it.
+  try {
+    await payload.login({
+      collection: 'users',
+      data: { email: user.email, password: currentPassword },
+    })
+  } catch {
+    return { ok: false, error: 'Your current password is incorrect.' }
+  }
+
+  await payload.update({
+    collection: 'users',
+    id: user.id,
+    user,
+    overrideAccess: false,
+    data: { password: newPassword },
+  })
+
+  // Re-issue the session cookie with the new credentials so this tab stays signed in.
+  await appAuth.loginWithEmailPassword(user.email, newPassword).catch(() => null)
+
+  return { ok: true, message: 'Password updated. Use your new password next time you sign in.' }
+}
+
 export async function markAllNotificationsReadAction(): Promise<ActionResult> {
   const user = await appAuth.getCurrentUser()
   if (!user) return { ok: false, error: 'Unauthorized' }

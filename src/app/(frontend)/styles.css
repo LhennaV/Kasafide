@@ -160,6 +160,18 @@
   box-shadow: 0 8px 30px rgb(var(--shade-rgb) / 0.22);
 }
 
+/* Toasts (components/kasafide/Toaster.tsx) */
+@keyframes kf-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Hero & Reveal Animations */
 @keyframes kf-blur-in {
   from {
