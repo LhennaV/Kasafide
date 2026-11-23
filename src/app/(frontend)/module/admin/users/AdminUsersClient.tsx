@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { adminModerateUserAction } from '@/app/actions/kasafide'
 
@@ -58,7 +59,12 @@ export function AdminUsersClient({ rows }: { rows: AdminUserRow[] }) {
             {shown.map((u) => (
               <tr key={u.id}>
                 <td data-label="User" className="py-3.5 px-5 font-extrabold">
-                  {u.fullName}
+                  <Link
+                    href={`/module/admin/users/${u.id}`}
+                    className="text-[var(--text)] hover:text-[var(--primary)] hover:underline"
+                  >
+                    {u.fullName}
+                  </Link>
                 </td>
                 <td data-label="Email" className="py-3.5 px-5 text-xs text-[var(--text-muted)]">
                   {u.email}

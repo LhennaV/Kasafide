@@ -7,6 +7,28 @@ import { KasafideLogo } from '@/components/kasafide/KasafideLogo'
 export function ForgotPasswordClient() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
+
+  async function requestReset() {
+    setError('')
+    setSending(true)
+    try {
+      const res = await fetch('/api/users/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      })
+      // Payload answers the same way whether or not the account exists, so the page does too:
+      // only a server or network failure is worth telling the visitor about.
+      if (res.status >= 500) throw new Error(`HTTP ${res.status}`)
+      setSent(true)
+    } catch {
+      setError('We could not send the email right now. Please try again in a few minutes.')
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[var(--bg)]">
@@ -23,7 +45,7 @@ export function ForgotPasswordClient() {
             </div>
             <h1 className="text-xl font-black text-[var(--text)]">Check Your Inbox</h1>
             <p className="text-sm text-[var(--text-muted)]">
-              If an account exists for <strong className="text-[var(--text)]">{email}</strong>, password recovery instructions have been queued.
+              If an account exists for <strong className="text-[var(--text)]">{email}</strong>, we&apos;ve sent a link to reset your password. It works for one hour.
             </p>
             <Link
               href="/auth/signin"
@@ -36,7 +58,7 @@ export function ForgotPasswordClient() {
           <form
             onSubmit={(e) => {
               e.preventDefault()
-              if (email.includes('@')) setSent(true)
+              if (email.includes('@') && !sending) void requestReset()
             }}
             className="space-y-4"
           >
@@ -55,11 +77,17 @@ export function ForgotPasswordClient() {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
               />
             </div>
+            {error && (
+              <p role="alert" className="text-xs font-bold text-center text-[var(--danger)]">
+                {error}
+              </p>
+            )}
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer"
+              disabled={sending}
+              className="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer disabled:opacity-60"
             >
-              Send Recovery Instructions
+              {sending ? 'Sending…' : 'Send Recovery Instructions'}
             </button>
             <div className="text-center pt-1">
               <Link href="/auth/signin" className="text-xs font-bold text-[var(--primary)] hover:underline">

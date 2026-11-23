@@ -292,7 +292,16 @@ export function ListingDetailClient({
               </div>
               <div>
                 <div className="font-extrabold text-base text-[var(--text)]">
-                  {listing.sellerName}
+                  {inPortal && listing.sellerId ? (
+                    <Link
+                      href={`/module/buyer/seller-profile/${listing.sellerId}`}
+                      className="hover:text-[var(--primary)] hover:underline"
+                    >
+                      {listing.sellerName}
+                    </Link>
+                  ) : (
+                    listing.sellerName
+                  )}
                 </div>
                 <div className="text-xs font-bold text-[var(--success)]">
                   ✓ Government ID &amp; MOA Verified Seller

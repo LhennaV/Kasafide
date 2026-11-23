@@ -530,13 +530,52 @@ export async function adminModerateListingAction(input: {
 export async function adminModerateUserAction(input: {
   targetUserId: string
   accountStatus: 'verified' | 'rejected' | 'suspended' | 'unverified'
+  /** Shown to the user on their verification submission; required when rejecting from the detail page. */
+  reason?: string
 }): Promise<ActionResult> {
   const user = await appAuth.getCurrentUser()
   if (!user || !['admin', 'superadmin', 'super_duper_admin'].includes(user.role)) {
     return { ok: false, error: 'Admin privileges required.' }
   }
 
+  const reason = input.reason?.trim().slice(0, 1000) || ''
+  if (input.accountStatus === 'rejected' && input.reason !== undefined && !reason) {
+    return { ok: false, error: 'Please select or write a rejection reason.' }
+  }
+
   const payload = await getPayloadClient()
+
+  // Record the decision on the user's most recent pending ID submission, so the reason
+  // travels with the documents it is about.
+  if (input.accountStatus === 'verified' || input.accountStatus === 'rejected') {
+    const latest = await payload
+      .find({
+        collection: 'verification-submissions',
+        user,
+        overrideAccess: false,
+        where: {
+          and: [{ user: { equals: input.targetUserId } }, { status: { equals: 'pending' } }],
+        },
+        sort: '-createdAt',
+        limit: 1,
+        depth: 0,
+      })
+      .catch(() => ({ docs: [] }))
+    const submission = latest.docs[0]
+    if (submission) {
+      await payload.update({
+        collection: 'verification-submissions',
+        id: submission.id,
+        user,
+        overrideAccess: false,
+        data: {
+          status: input.accountStatus === 'verified' ? 'approved' : 'rejected',
+          ...(reason ? { reviewerNotes: reason } : {}),
+        },
+      })
+    }
+  }
+
   const target = await payload.update({
     collection: 'users',
     id: input.targetUserId,
@@ -563,8 +602,8 @@ export async function adminModerateUserAction(input: {
       actorEmail: user.email,
       actorRole: user.role === 'admin' ? 'admin' : 'superadmin',
       action: `Updated User Status (${target.fullName} -> ${input.accountStatus})`,
-      status: input.accountStatus === 'suspended' ? 'warning' : 'success',
-      details: `Account verification status changed to ${input.accountStatus}.`,
+      status: input.accountStatus === 'suspended' || input.accountStatus === 'rejected' ? 'warning' : 'success',
+      details: reason || `Account verification status changed to ${input.accountStatus}.`,
     },
   })
 

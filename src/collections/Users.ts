@@ -10,7 +10,27 @@ import { invalidateListingCaches } from '../hooks/revalidateKasafide'
 
 export const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
+  auth: {
+    forgotPassword: {
+      // Payload's default link opens /admin/reset/<token> (the CMS panel). Members reset theirs on
+      // the Kasafide page instead. The mail itself still needs an email adapter in payload.config.ts.
+      generateEmailSubject: () => 'Reset your Kasafide password',
+      generateEmailHTML: ({ req, token } = {}) => {
+        const host = req?.headers?.get('host')
+        const origin =
+          process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
+          (host ? `${host.startsWith('localhost') ? 'http' : 'https'}://${host}` : 'http://localhost:3000')
+        const link = `${origin}/auth/reset-password?token=${encodeURIComponent(token ?? '')}`
+        return `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#2B1B3D;line-height:1.5">
+<h2 style="margin:0 0 12px">Reset your Kasafide password</h2>
+<p>Someone asked to reset the password for this Kasafide account. If it was you, open the link below. It works for one hour.</p>
+<p><a href="${link}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#5B3A8E;color:#FBF6F0;text-decoration:none;font-weight:bold">Choose a new password</a></p>
+<p style="font-size:13px;color:#6b5b7b">Or paste this into your browser: ${link}</p>
+<p style="font-size:13px;color:#6b5b7b">If you didn't ask for this, you can ignore this email. Your password stays the same.</p>
+</body></html>`
+      },
+    },
+  },
   admin: {
     useAsTitle: 'fullName',
     group: 'Kasafide Directory',

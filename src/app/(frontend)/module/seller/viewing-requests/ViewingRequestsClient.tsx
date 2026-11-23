@@ -1,6 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { updateViewingStatusAction } from '@/app/actions/kasafide'
 
@@ -8,6 +9,7 @@ export type ViewingRow = {
   id: string
   listingTitle: string
   buyerName: string
+  buyerId: string
   preferredDate: string
   preferredTime: string
   notes: string
@@ -38,7 +40,16 @@ export function ViewingRequestsClient({ rows }: { rows: ViewingRow[] }) {
                   {r.listingTitle}
                 </td>
                 <td data-label="Buyer" className="py-3.5 px-5">
-                  {r.buyerName}
+                  {r.buyerId ? (
+                    <Link
+                      href={`/module/seller/buyer-profile/${r.buyerId}`}
+                      className="font-bold text-[var(--text)] hover:text-[var(--primary)] hover:underline"
+                    >
+                      {r.buyerName}
+                    </Link>
+                  ) : (
+                    r.buyerName
+                  )}
                 </td>
                 <td data-label="Schedule" className="py-3.5 px-5 text-xs font-semibold">
                   {r.preferredDate} &middot; {r.preferredTime}

@@ -31,6 +31,7 @@ export default async function SellerViewingRequestsPage() {
       id: String(v.id),
       listingTitle: listing?.title || 'Property',
       buyerName: buyer?.fullName || 'Verified Buyer',
+      buyerId: buyer ? String(buyer.id) : '',
       preferredDate: v.preferredDate,
       preferredTime: v.preferredTime,
       notes: v.notes || '',

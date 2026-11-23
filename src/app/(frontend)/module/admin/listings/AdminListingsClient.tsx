@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { adminModerateListingAction } from '@/app/actions/kasafide'
 import type { ListingCardView } from '@/lib/kasafide-data'
@@ -53,7 +54,12 @@ export function AdminListingsClient({ listings }: { listings: ListingCardView[] 
             {shown.map((l) => (
               <tr key={l.id}>
                 <td data-label="Property" className="py-3.5 px-5 font-extrabold">
-                  {l.title}
+                  <Link
+                    href={`/module/admin/listings/${l.id}`}
+                    className="text-[var(--text)] hover:text-[var(--primary)] hover:underline"
+                  >
+                    {l.title}
+                  </Link>
                 </td>
                 <td data-label="Seller" className="py-3.5 px-5 text-xs">
                   {l.sellerName}
@@ -98,25 +104,13 @@ export function AdminListingsClient({ listings }: { listings: ListingCardView[] 
                         Approve &amp; Verify TCT
                       </button>
                     )}
-                    {l.status !== 'rejected' && (
-                      <button
-                        type="button"
-                        disabled={isPending}
-                        onClick={() => {
-                          startTransition(async () => {
-                            await adminModerateListingAction({
-                              listingId: l.id,
-                              status: 'rejected',
-                              rejectionReason: 'Requires clearer TCT or ID verification.',
-                            })
-                            router.refresh()
-                          })
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-[var(--danger)]/15 text-[var(--danger)] text-xs font-bold cursor-pointer"
-                      >
-                        Reject
-                      </button>
-                    )}
+                    {/* Rejecting goes through the detail page so the seller always gets a specific reason. */}
+                    <Link
+                      href={`/module/admin/listings/${l.id}`}
+                      className="px-3 py-1.5 rounded-xl border border-[var(--border)] text-[var(--text-muted)] text-xs font-bold"
+                    >
+                      {l.status === 'pending' ? 'Review' : 'Details'}
+                    </Link>
                   </div>
                 </td>
               </tr>
