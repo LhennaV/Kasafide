@@ -55,7 +55,8 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
-    push: true,
+    schemaName: 'payload',
+    push: false,
   }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -68,3 +69,4 @@ export default buildConfig({
   },
   plugins: [mcpPlugin({})],
 })
+
