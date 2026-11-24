@@ -22,7 +22,7 @@ export default async function SellerSettingsPage() {
       <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] mb-5">Seller Settings</h1>
       <div className="space-y-6">
         <AccountSettingsForm user={user} />
-        <ChangePasswordForm isDemo={Boolean(user.isDemo)} />
+        <ChangePasswordForm />
       </div>
     </PortalShell>
   )

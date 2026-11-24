@@ -22,6 +22,57 @@ const QUICK_PROMPTS = [
   },
 ]
 
+// Keyword rules, not an AI model (same approach as the original chatbot-widget.js).
+// Each rule is a list of words; whole-word matching, so "id" does not fire on "paid" or "inside".
+const RULES: Array<{ words: string[]; answer: string }> = [
+  {
+    words: ['list', 'post', 'ilista', 'magbenta', 'benta', 'ipaupa', 'paupahan'],
+    answer:
+      'To list a property: 1) finish identity verification, 2) open Post a Property from your seller dashboard, 3) fill in the details and upload photos, 4) add the ownership document (TCT / Deed of Sale / Tax Declaration), 5) wait for an admin to approve it before it goes public.',
+  },
+  {
+    words: ['pay', 'paid', 'payment', 'payments', 'gcash', 'maya', 'qr', 'bayad', 'magbayad', 'bayaran', 'deposit', 'downpayment'],
+    answer: QUICK_PROMPTS[1].a,
+  },
+  {
+    words: ['verify', 'verified', 'verification', 'id', 'selfie', 'moa', 'beripika', 'patunay'],
+    answer: QUICK_PROMPTS[0].a,
+  },
+  {
+    words: ['message', 'messages', 'chat', 'contact', 'seller', 'owner', 'viewing', 'kausapin', 'mensahe', 'may-ari'],
+    answer:
+      'Open a listing and tap Message Seller to chat with the owner inside Kasafide. You can ask about the place and send a viewing request — no phone numbers needed.',
+  },
+  {
+    words: ['unit', 'units', 'multi', 'apartment', 'apartments'],
+    answer:
+      'For buildings with several units, turn on Multiple Units when posting and set the total and available units. You can adjust availability anytime from My Listings.',
+  },
+  {
+    words: ['close', 'closed', 'sold', 'rented', 'isara', 'nabenta'],
+    answer:
+      'Once a deal is done you can close the listing from My Listings so it leaves public browse. For multi-unit properties, lower the available units instead.',
+  },
+  { words: ['barangay', 'barangays', 'map', 'location', 'saan', 'lugar'], answer: QUICK_PROMPTS[2].a },
+  { words: ['google', 'signin', 'login', 'sign', 'mag-login'], answer: QUICK_PROMPTS[3].a },
+  {
+    words: ['hi', 'hello', 'hey', 'kumusta', 'kamusta', 'musta', 'meow'],
+    answer:
+      'Meow! I can help with listing a property, payments, verification, messaging sellers, and which barangays are covered. What would you like to know?',
+  },
+]
+
+const FALLBACK =
+  'Hmm, I’m not sure about that one yet. Try asking about listing a property, payments, verification, or messaging a seller — or check the FAQs page.'
+
+function answerFor(question: string) {
+  const words: string[] = question.toLowerCase().match(/[a-z0-9ñ-]+/g) ?? []
+  for (const rule of RULES) {
+    if (rule.words.some((w) => words.includes(w))) return rule.answer
+  }
+  return FALLBACK
+}
+
 export function MeowrieAssistant() {
   const [messages, setMessages] = useState<Array<{ from: 'bot' | 'me'; text: string }>>([
     {
@@ -34,22 +85,7 @@ export function MeowrieAssistant() {
   function ask(question: string, cannedAnswer?: string) {
     const q = question.trim()
     if (!q) return
-    const lower = q.toLowerCase()
-    let reply =
-      cannedAnswer ||
-      'Every listing on Kasafide is reviewed by an Admin after checking the seller’s Government ID, live selfie, and property ownership document (TCT / Deed of Sale / Tax Declaration).'
-
-    if (!cannedAnswer) {
-      if (lower.includes('gcash') || lower.includes('maya') || lower.includes('pay')) {
-        reply = QUICK_PROMPTS[1].a
-      } else if (lower.includes('verif') || lower.includes('id') || lower.includes('moa')) {
-        reply = QUICK_PROMPTS[0].a
-      } else if (lower.includes('barangay') || lower.includes('map')) {
-        reply = QUICK_PROMPTS[2].a
-      } else if (lower.includes('google') || lower.includes('sign')) {
-        reply = QUICK_PROMPTS[3].a
-      }
-    }
+    const reply = cannedAnswer || answerFor(q)
 
     setMessages((prev) => [...prev, { from: 'me', text: q }, { from: 'bot', text: reply }])
     setInput('')

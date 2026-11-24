@@ -21,7 +21,7 @@ export default async function AdminSettingsPage() {
       <h1 className="text-2xl sm:text-3xl font-black mb-5">Admin Settings</h1>
       <div className="space-y-6">
         <AccountSettingsForm user={user} />
-        <ChangePasswordForm isDemo={Boolean(user.isDemo)} />
+        <ChangePasswordForm />
       </div>
     </PortalShell>
   )

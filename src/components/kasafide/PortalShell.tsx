@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { markAllNotificationsReadAction } from '@/app/actions/kasafide'
-import { announceSessionChange, signOutInPlace } from '@/lib/app-session-browser'
+import { signOutInPlace } from '@/lib/app-session-browser'
 import type { PortalNotificationItem, PortalUserSummary } from '@/lib/portal-guard'
 import { KasafideLogo } from './KasafideLogo'
 import { ThemeToggle } from './ThemeToggle'
@@ -221,19 +221,6 @@ export function PortalShell({
   const unreadNotifCount = notifications.filter((n) => n.unread).length
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'K'
 
-  async function switchDemoRole(demoRole: 'buyer' | 'seller' | 'admin' | 'superadmin') {
-    const res = await fetch('/api/app-auth/demo', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ role: demoRole }),
-    })
-    const data = (await res.json()) as { ok?: boolean; redirectTo?: string }
-    if (res.ok && data.ok) {
-      await announceSessionChange(router)
-      window.location.href = data.redirectTo || `/module/${demoRole === 'superadmin' ? 'super-admin' : demoRole}`
-    }
-  }
-
   return (
     <div className="min-h-screen flex bg-[var(--bg)] text-[var(--text)]">
       {/* ── Desktop Collapsible Hover Rail Sidebar (Preserved from sidebar.js) ── */}
@@ -333,32 +320,6 @@ export function PortalShell({
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Desktop Quick Role Switcher Pill */}
-            <div className="hidden lg:flex items-center gap-1 px-2.5 py-1 rounded-full border border-[var(--primary)]/40 bg-[var(--primary)]/10 text-[11px]">
-              <span className="text-[var(--primary)] font-black flex items-center gap-1 px-1">
-                <span>⚡ Demo:</span>
-              </span>
-              {(['buyer', 'seller', 'admin', 'superadmin'] as const).map((r) => {
-                const isCurrent =
-                  (r === 'superadmin' && (user.role === 'super_duper_admin' || user.role === 'superadmin')) ||
-                  user.role === r
-                return (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => switchDemoRole(r)}
-                    className={`px-2.5 py-0.5 rounded-full font-extrabold capitalize cursor-pointer transition ${
-                      isCurrent
-                        ? 'bg-[var(--primary)] text-[var(--on-primary)] shadow-xs'
-                        : 'text-[var(--text-soft)] hover:text-[var(--text)] hover:bg-[var(--surface)]'
-                    }`}
-                  >
-                    {r === 'superadmin' ? 'Super Admin' : r}
-                  </button>
-                )
-              })}
-            </div>
-
             <ThemeToggle className="w-9 h-9" />
 
             {/* Notification Bell */}
@@ -602,27 +563,6 @@ export function PortalShell({
                   {sub.label}
                 </Link>
               ))}
-            </div>
-
-            <div className="pt-3 border-t border-[var(--border)]">
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] mb-2">
-                Quick Demo Role Switcher
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {(['buyer', 'seller', 'admin', 'superadmin'] as const).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={async () => {
-                      setMoreSheetOpen(false)
-                      await switchDemoRole(r)
-                    }}
-                    className="py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-xs font-bold capitalize"
-                  >
-                    {r === 'superadmin' ? 'Super Admin' : r}
-                  </button>
-                ))}
-              </div>
             </div>
 
             <button

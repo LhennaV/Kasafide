@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getPayloadClient } from '@/lib/payload'
-import { DEMO_PULONG_BUHANGIN_LOT, mapListingDoc } from '@/lib/kasafide-data'
+import { mapListingDoc } from '@/lib/kasafide-data'
 import { requirePortalUser } from '@/lib/portal-guard'
 import { PortalShell } from '@/components/kasafide/PortalShell'
 import { SellerListingsClient } from './SellerListingsClient'
@@ -25,10 +25,7 @@ export default async function SellerListingsPage() {
     })
     .catch(() => ({ docs: [] }))
 
-  let listings = res.docs.map(mapListingDoc)
-  if (listings.length === 0) {
-    listings = [DEMO_PULONG_BUHANGIN_LOT]
-  }
+  const listings = res.docs.map(mapListingDoc)
 
   return (
     <PortalShell

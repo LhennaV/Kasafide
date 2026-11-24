@@ -1,5 +1,4 @@
 import { appAuth, getRoleHomePath } from '@/lib/app-auth'
-import { DEMO_ACCOUNTS, type DemoRole, loginDemoSession } from '@/lib/demo-accounts'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
@@ -7,23 +6,7 @@ export async function POST(request: Request) {
     const body = (await request.json().catch(() => null)) as {
       email?: unknown
       password?: unknown
-      demoRole?: unknown
     } | null
-
-    // 0. INSTANT DEMO PREVIEW: If demoRole is supplied, use instant demo session
-    if (typeof body?.demoRole === 'string' && DEMO_ACCOUNTS[body.demoRole as DemoRole]) {
-      const demoResult = await loginDemoSession(body.demoRole as DemoRole)
-      return Response.json({
-        ok: true,
-        redirectTo: demoResult.redirectTo,
-        user: {
-          id: String(demoResult.user.id),
-          name: demoResult.user.fullName,
-          email: demoResult.user.email,
-          role: demoResult.user.role,
-        },
-      })
-    }
 
     let email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
     let password = typeof body?.password === 'string' ? body.password : ''

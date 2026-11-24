@@ -21,27 +21,7 @@ export default async function SuperAdminAdminsPage() {
     })
     .catch(() => ({ docs: [] }))
 
-  let docs = res.docs as User[]
-  if (docs.length === 0) {
-    docs = [
-      {
-        id: 90003,
-        fullName: 'Staff Admin (Admin Demo)',
-        email: 'admin@kasafide.ph',
-        role: 'admin',
-        accountStatus: 'verified',
-        createdAt: '2026-01-01T00:00:00.000Z',
-      } as unknown as User,
-      {
-        id: 90004,
-        fullName: 'Super Administrator (Super Admin Demo)',
-        email: 'superadmin@kasafide.ph',
-        role: 'superadmin',
-        accountStatus: 'verified',
-        createdAt: '2026-01-01T00:00:00.000Z',
-      } as unknown as User,
-    ]
-  }
+  const docs = res.docs as User[]
 
   const admins = docs.map((u) => ({
     id: String(u.id),

@@ -111,63 +111,6 @@ export function mapListingDoc(doc: Listing): ListingCardView {
   }
 }
 
-/** Demo Property: 1 Fake Data for Lot in Pulong Buhangin, Sta. Maria, Bulacan */
-export const DEMO_PULONG_BUHANGIN_LOT: ListingCardView = {
-  id: '99001',
-  slug: 'prime-residential-lot-pulong-buhangin',
-  title: 'Prime 240 sqm Corner Residential Lot - Pulong Buhangin',
-  propertyType: 'lot',
-  listingType: 'sale',
-  status: 'approved',
-  price: 1850000,
-  priceFormatted: '₱1,850,000',
-  periodLabel: '',
-  barangayName: 'Pulong Buhangin',
-  barangaySlug: 'pulong-buhangin',
-  address: 'KM 38, Pulong Buhangin (Near Bypass Road & Garden Village)',
-  city: 'Sta. Maria',
-  province: 'Bulacan',
-  bedrooms: 0,
-  bathrooms: 0,
-  floorAreaSqm: 0,
-  lotAreaSqm: 240,
-  description:
-    'Prime corner residential lot in Pulong Buhangin, Sta. Maria, Bulacan. Clean Transfer Certificate of Title (TCT), updated real property tax, zero encumbrance. Ready for construction, near schools, markets, and accessible via the bypass road.',
-  coverUrl: '/assets/img/house_image.jpg',
-  coverAlt: 'Prime Corner Lot in Pulong Buhangin',
-  gallery: [
-    {
-      url: '/assets/img/house_image.jpg',
-      alt: 'Pulong Buhangin Lot Corner View',
-      caption: 'Wide corner lot frontage along paved road',
-    },
-    {
-      url: '/assets/img/logo.jpg',
-      alt: 'Clean TCT Title Verification',
-      caption: 'Verified Transfer Certificate of Title (TCT)',
-    },
-  ],
-  amenities: [
-    'Clean TCT Title',
-    'Corner Lot',
-    'Wide Road Frontage',
-    'Flood-Free Elevation',
-    'Meralco & Water Ready',
-    'Near Bypass Road',
-  ],
-  featured: true,
-  titleVerified: true,
-  priceNegotiable: true,
-  hasMultipleUnits: false,
-  totalUnits: 1,
-  availableUnits: 1,
-  ownershipDocType: 'tct',
-  sellerId: '90002',
-  sellerName: 'Maria Santos (Verified Seller)',
-  sellerVerified: true,
-  createdAt: '2026-01-10T10:00:00.000Z',
-}
-
 export const getCachedPublicMarketplace = unstable_cache(
   async () => {
     const payload = await getPayloadClient()
@@ -203,10 +146,6 @@ export const getCachedPublicMarketplace = unstable_cache(
     ])
 
     const listings = listingsRes.docs.map(mapListingDoc)
-    // Guarantee our Pulong Buhangin demo lot is always present in marketplace
-    if (!listings.some((l) => l.slug === DEMO_PULONG_BUHANGIN_LOT.slug)) {
-      listings.unshift(DEMO_PULONG_BUHANGIN_LOT)
-    }
 
     const countsByBarangaySlug: Record<string, number> = {}
     for (const item of listings) {
@@ -229,7 +168,7 @@ export const getCachedPublicMarketplace = unstable_cache(
       stats: {
         barangaysCovered: barangays.length || 24,
         listingsLive: listings.length,
-        verifiedSellers: sellersCountRes.totalDocs || 1,
+        verifiedSellers: sellersCountRes.totalDocs,
         unverifiedListings: 0,
       },
     }
@@ -243,38 +182,8 @@ export const getCachedPublicMarketplace = unstable_cache(
 export function getCachedListingDetail(slug: string) {
   return unstable_cache(
     async () => {
-      // Demo lot direct resolution
-      if (
-        slug === DEMO_PULONG_BUHANGIN_LOT.slug ||
-        slug === 'demo-lot-pulong-buhangin' ||
-        slug === '99001'
-      ) {
-        return {
-          listing: DEMO_PULONG_BUHANGIN_LOT,
-          reviews: [
-            {
-              id: 'review-pb-1',
-              rating: 5,
-              comment:
-                'Clean title and boundary markers verified on site. Very peaceful neighborhood near Pulong Buhangin national road.',
-              reviewerName: 'Juan Dela Cruz (Verified Buyer)',
-              createdAt: '2026-01-20T14:30:00.000Z',
-            },
-          ],
-        }
-      }
-
       const doc = await findBySlug('listings', slug, { depth: 2 }).catch(() => null)
-      if (!doc || doc.status !== 'approved') {
-        // Fallback to demo lot if unknown slug in demo mode
-        if (slug.includes('pulong-buhangin') || slug.includes('lot')) {
-          return {
-            listing: DEMO_PULONG_BUHANGIN_LOT,
-            reviews: [],
-          }
-        }
-        return null
-      }
+      if (!doc || doc.status !== 'approved') return null
       const payload = await getPayloadClient()
       const reviewsRes = await payload
         .find({

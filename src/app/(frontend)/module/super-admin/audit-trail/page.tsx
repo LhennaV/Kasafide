@@ -19,43 +19,8 @@ export default async function SuperAdminAuditTrailPage() {
     })
     .catch(() => ({ docs: [] }))
 
-  const fallbackAudits: AuditLog[] = [
-    {
-      id: 1,
-      actorName: 'Staff Admin (Demo)',
-      actorRole: 'admin',
-      action: 'Verified Seller MOA & ID for Maria Santos (Pulong Buhangin Lot)',
-      ipAddress: '120.28.64.18',
-      status: 'success',
-      details: 'TCT Title #040-202400192 and Seller Government ID cross-verified.',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as unknown as AuditLog,
-    {
-      id: 2,
-      actorName: 'System Security',
-      actorRole: 'system',
-      action: 'Automatic Title Registry Check (TCT Clean) - Pulong Buhangin',
-      ipAddress: '127.0.0.1',
-      status: 'success',
-      details: 'Sta. Maria Land Registration Authority integration mock verified zero encumbrances.',
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
-      updatedAt: new Date(Date.now() - 3600000).toISOString(),
-    } as unknown as AuditLog,
-    {
-      id: 3,
-      actorName: 'Super Administrator (Demo)',
-      actorRole: 'superadmin',
-      action: 'Updated Platform Commission & Escrow Policy',
-      ipAddress: '120.28.64.18',
-      status: 'success',
-      details: 'Updated maximum allowable downpayment escrow limit for Sta. Maria listings.',
-      createdAt: new Date(Date.now() - 7200000).toISOString(),
-      updatedAt: new Date(Date.now() - 7200000).toISOString(),
-    } as unknown as AuditLog,
-  ]
 
-  const auditDocs = (res.docs.length > 0 ? res.docs : fallbackAudits) as AuditLog[]
+  const auditDocs = res.docs as AuditLog[]
 
   return (
     <PortalShell

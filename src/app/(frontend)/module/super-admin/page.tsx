@@ -40,68 +40,10 @@ export default async function SuperAdminDashboardPage() {
       .catch(() => ({ docs: [] })),
   ])
 
-  let allUsers = usersRes.docs as User[]
-  if (allUsers.length === 0) {
-    allUsers = [
-      {
-        id: 90001,
-        fullName: 'Juan Dela Cruz (Buyer Demo)',
-        email: 'buyer@kasafide.ph',
-        role: 'buyer',
-        accountStatus: 'verified',
-        createdAt: '2026-01-01T00:00:00.000Z',
-      } as unknown as User,
-      {
-        id: 90002,
-        fullName: 'Maria Santos (Seller Demo)',
-        email: 'seller@kasafide.ph',
-        role: 'seller',
-        accountStatus: 'verified',
-        createdAt: '2026-01-02T00:00:00.000Z',
-      } as unknown as User,
-      {
-        id: 90003,
-        fullName: 'Staff Admin (Admin Demo)',
-        email: 'admin@kasafide.ph',
-        role: 'admin',
-        accountStatus: 'verified',
-        createdAt: '2026-01-03T00:00:00.000Z',
-      } as unknown as User,
-      {
-        id: 90004,
-        fullName: 'Super Administrator (Demo)',
-        email: 'superadmin@kasafide.ph',
-        role: 'superadmin',
-        accountStatus: 'verified',
-        createdAt: '2026-01-04T00:00:00.000Z',
-      } as unknown as User,
-    ]
-  }
+  const allUsers = usersRes.docs as User[]
 
-  const fallbackAudits: AuditLog[] = [
-    {
-      id: 1,
-      actorName: 'Staff Admin (Demo)',
-      actorRole: 'admin',
-      action: 'Verified Seller ID for Maria Santos (Pulong Buhangin Lot)',
-      ipAddress: '120.28.64.18',
-      status: 'success',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    } as unknown as AuditLog,
-    {
-      id: 2,
-      actorName: 'System Security',
-      actorRole: 'system',
-      action: 'Automatic Title Registry Check (TCT Clean) - Pulong Buhangin',
-      ipAddress: '127.0.0.1',
-      status: 'success',
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
-      updatedAt: new Date(Date.now() - 3600000).toISOString(),
-    } as unknown as AuditLog,
-  ]
 
-  const auditDocs = (auditsRes.docs.length > 0 ? auditsRes.docs : fallbackAudits) as AuditLog[]
+  const auditDocs = auditsRes.docs as AuditLog[]
   const admins = allUsers
     .filter((u) => ['admin', 'superadmin', 'super_duper_admin'].includes(u.role))
     .map((u) => ({

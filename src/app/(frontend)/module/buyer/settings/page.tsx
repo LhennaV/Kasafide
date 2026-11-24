@@ -22,7 +22,7 @@ export default async function BuyerSettingsPage() {
       </div>
       <div className="space-y-6">
         <AccountSettingsForm user={user} />
-        <ChangePasswordForm isDemo={Boolean(user.isDemo)} />
+        <ChangePasswordForm />
       </div>
     </PortalShell>
   )

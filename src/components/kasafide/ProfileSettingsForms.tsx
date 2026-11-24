@@ -240,7 +240,7 @@ export function IdentityVerificationForm({
 
 const PASSWORD_MIN = 8
 
-export function ChangePasswordForm({ isDemo = false }: { isDemo?: boolean }) {
+export function ChangePasswordForm() {
   const [isPending, startTransition] = useTransition()
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
@@ -250,17 +250,6 @@ export function ChangePasswordForm({ isDemo = false }: { isDemo?: boolean }) {
 
   const inputClass =
     'w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm'
-
-  if (isDemo) {
-    return (
-      <section className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 max-w-2xl">
-        <h2 className="text-base font-extrabold text-[var(--text)]">Change Password</h2>
-        <p className="text-sm text-[var(--text-muted)] mt-1">
-          Demo accounts are shared, so their password can&apos;t be changed.
-        </p>
-      </section>
-    )
-  }
 
   return (
     <form

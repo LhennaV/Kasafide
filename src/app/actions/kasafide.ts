@@ -466,9 +466,6 @@ export async function changePasswordAction(input: {
   const user = await appAuth.getCurrentUser()
   if (!user) return { ok: false, error: 'Please sign in again.' }
 
-  if (user.email.endsWith('@kasafide.ph')) {
-    return { ok: false, error: 'Demo accounts are shared, so their password cannot be changed.' }
-  }
   if (user.authProvider === 'google') {
     return {
       ok: false,

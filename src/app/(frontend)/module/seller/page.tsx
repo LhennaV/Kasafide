@@ -38,7 +38,7 @@ export default async function SellerDashboardPage() {
     getCachedPublicMarketplace(),
   ])
 
-  const activeCount = myActiveRes.totalDocs > 0 ? myActiveRes.totalDocs : (user.isDemo ? 1 : 0)
+  const activeCount = myActiveRes.totalDocs
 
   return (
     <PortalShell

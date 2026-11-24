@@ -173,54 +173,8 @@ export function PublicNavbar({ activePage = 'home' }: { activePage?: string }) {
 
           <NavLinks />
 
-          {/* Right Actions: Theme + Demo Roles + Sign In + Sign Up (or Role Portal) */}
+          {/* Right Actions: Sign In + Sign Up (or Role Portal) */}
           <div className="flex items-center gap-2">
-            {/* Quick Demo Preview Button */}
-            <div className="relative group">
-              <button
-                type="button"
-                className="px-3 py-1.5 rounded-full border border-[var(--primary)]/60 bg-[var(--primary)]/15 text-[var(--primary)] font-extrabold text-[12px] flex items-center gap-1.5 hover:bg-[var(--primary)] hover:text-[var(--on-primary)] transition cursor-pointer"
-              >
-                <span>⚡ Demo Preview</span>
-                <span className="text-[9px]">▼</span>
-              </button>
-              <div className="hidden group-hover:block absolute right-0 top-full pt-1.5 z-50 min-w-[200px]">
-                <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl p-2 space-y-1">
-                  <div className="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-[var(--text-muted)]">
-                    No login needed · Instant Roles
-                  </div>
-                  <Link
-                    href="/api/app-auth/demo?role=buyer"
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[var(--text)] hover:bg-[var(--surface-soft)] hover:text-[var(--primary)] transition"
-                  >
-                    <span>👤</span>
-                    <span>Buyer / Renter</span>
-                  </Link>
-                  <Link
-                    href="/api/app-auth/demo?role=seller"
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[var(--text)] hover:bg-[var(--surface-soft)] hover:text-[var(--primary)] transition"
-                  >
-                    <span>🏡</span>
-                    <span>Verified Seller</span>
-                  </Link>
-                  <Link
-                    href="/api/app-auth/demo?role=admin"
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[var(--text)] hover:bg-[var(--surface-soft)] hover:text-[var(--primary)] transition"
-                  >
-                    <span>🛡️</span>
-                    <span>Admin Moderator</span>
-                  </Link>
-                  <Link
-                    href="/api/app-auth/demo?role=superadmin"
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[var(--text)] hover:bg-[var(--surface-soft)] hover:text-[var(--primary)] transition"
-                  >
-                    <span>⚡</span>
-                    <span>Super Admin</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
             {signedInUser ? (
               <div className="hidden sm:flex items-center gap-2">
                 <Link
@@ -322,42 +276,6 @@ export function PublicNavbar({ activePage = 'home' }: { activePage?: string }) {
             </div>
 
             <div className="pt-3 border-t border-[var(--border)] flex flex-col gap-2">
-              <div className="rounded-2xl border border-[var(--primary)]/40 bg-[var(--primary)]/10 p-3 mb-1">
-                <div className="text-[11px] font-extrabold uppercase text-[var(--primary)] mb-2 flex items-center gap-1">
-                  <span>⚡ Instant Demo Role Preview</span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5 text-xs font-bold">
-                  <Link
-                    href="/api/app-auth/demo?role=buyer"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-2 rounded-xl bg-[var(--surface)] text-center border border-[var(--border)]"
-                  >
-                    👤 Buyer
-                  </Link>
-                  <Link
-                    href="/api/app-auth/demo?role=seller"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-2 rounded-xl bg-[var(--surface)] text-center border border-[var(--border)]"
-                  >
-                    🏡 Seller
-                  </Link>
-                  <Link
-                    href="/api/app-auth/demo?role=admin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-2 rounded-xl bg-[var(--surface)] text-center border border-[var(--border)]"
-                  >
-                    🛡️ Admin
-                  </Link>
-                  <Link
-                    href="/api/app-auth/demo?role=superadmin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-2 rounded-xl bg-[var(--surface)] text-center border border-[var(--border)]"
-                  >
-                    ⚡ Super Admin
-                  </Link>
-                </div>
-              </div>
-
               {signedInUser ? (
                 <>
                   <Link
