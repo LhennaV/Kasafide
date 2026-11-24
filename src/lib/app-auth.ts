@@ -165,6 +165,27 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
       path: '/',
       maxAge: 0,
     })
+
+    // Sign out from Supabase Auth so SSR session does not re-authenticate user
+    try {
+      const supabase = await createSupabaseClient()
+      await supabase.auth.signOut()
+    } catch (sbErr) {
+      console.warn('Supabase sign out during clearLocalSession:', sbErr)
+    }
+
+    // Safeguard: explicitly clear any lingering Supabase auth cookies
+    try {
+      const allCookies = cookieStore.getAll()
+      for (const cookie of allCookies) {
+        if (cookie.name.startsWith('sb-') || cookie.name.includes('supabase')) {
+          cookieStore.set(cookie.name, '', {
+            path: '/',
+            maxAge: 0,
+          })
+        }
+      }
+    } catch {}
   }
 
   return {

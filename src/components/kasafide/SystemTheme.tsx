@@ -24,6 +24,34 @@ export function SystemTheme() {
   const pathname = usePathname() || '/'
 
   useEffect(() => {
+    // Suppress DevTools/inspector recursion warnings during HMR/fast refresh
+    const ignorePatterns = [
+      'The children should not have changed if we pass in the same set',
+      'updateFiberRecursively',
+      'updateVirtualChildrenRecursively',
+    ]
+
+    const origError = console.error
+    console.error = function (...args: unknown[]) {
+      const str = args
+        .map((a) => (a instanceof Error ? a.message + ' ' + (a.stack || '') : String(a)))
+        .join(' ')
+      if (ignorePatterns.some((pattern) => str.includes(pattern))) {
+        return
+      }
+      origError.apply(console, args)
+    }
+
+    const errorHandler = (e: ErrorEvent) => {
+      const msg = e.message || (e.error && e.error.message) || ''
+      if (ignorePatterns.some((pattern) => msg.includes(pattern))) {
+        e.stopImmediatePropagation()
+        e.preventDefault()
+      }
+    }
+
+    window.addEventListener('error', errorHandler, true)
+
     const media = window.matchMedia('(prefers-color-scheme: light)')
     const apply = () => {
       const theme = savedPortalTheme(pathname) ?? (media.matches ? 'light' : 'dark')
@@ -31,7 +59,10 @@ export function SystemTheme() {
     }
     apply()
     media.addEventListener('change', apply)
-    return () => media.removeEventListener('change', apply)
+    return () => {
+      media.removeEventListener('change', apply)
+      window.removeEventListener('error', errorHandler, true)
+    }
   }, [pathname])
 
   return null

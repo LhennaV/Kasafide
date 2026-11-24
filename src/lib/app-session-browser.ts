@@ -97,14 +97,21 @@ export async function announceSessionChange(
 }
 
 export async function signOutInPlace(
-  router: { refresh(): void },
+  router: { refresh(): void; push?: (href: string) => void },
   store: SessionStore<unknown> = authSession,
 ): Promise<void> {
   await store.change(async () => {
-    // 1. Clear Payload local app-session cookie
+    // 1. Sign out of browser Supabase client if present
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      await supabase.auth.signOut()
+    } catch {}
+
+    // 2. Clear Payload & Supabase server-side session cookies
     await fetch('/api/app-auth/logout', { method: 'POST', cache: 'no-store' }).catch(() => null)
 
-    // 2. Also sign out of Auth.js endpoint when active
+    // 3. Also sign out of Auth.js endpoint when active
     const csrf = await fetch('/api/auth/csrf', { cache: 'no-store' }).catch(() => null)
     if (csrf && csrf.ok) {
       const data = (await csrf.json().catch(() => null)) as { csrfToken?: unknown } | null
@@ -119,7 +126,7 @@ export async function signOutInPlace(
         })
         const body = (await response.json().catch(() => null)) as { url?: unknown } | null
         if (!response.ok || (typeof body?.url === 'string' && body.url.includes('error='))) {
-          throw new Error('Sign-out failed')
+          // Non-blocking error handling
         }
       }
     }
