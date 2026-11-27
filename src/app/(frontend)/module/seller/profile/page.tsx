@@ -20,8 +20,14 @@ export default async function SellerProfilePage() {
         user={user}
         settingsHref="/module/seller/settings"
         extra={[
-          { label: 'GCash Payout', value: user.gcashNumber || 'Not configured' },
-          { label: 'Maya Payout', value: user.mayaNumber || 'Not configured' },
+          {
+            label: 'E-Wallet Payout',
+            value: user.ewalletNumber ? `${user.ewalletProvider} ${user.ewalletNumber}` : 'Not configured',
+          },
+          {
+            label: 'Bank Payout',
+            value: user.bankAccountNumber ? `${user.bankName} ${user.bankAccountNumber}` : 'Not configured',
+          },
         ]}
       />
     </PortalShell>

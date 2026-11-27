@@ -1,9 +1,11 @@
 import { requirePortalUser } from '@/lib/portal-guard'
 import { PortalShell } from '@/components/kasafide/PortalShell'
+import { UpgradeToSellerCard } from '@/components/kasafide/UpgradeToSellerCard'
 import {
   AccountSettingsForm,
   ChangePasswordForm,
 } from '@/components/kasafide/ProfileSettingsForms'
+import { ThemeSetting } from '@/components/kasafide/ThemeSetting'
 
 export default async function BuyerSettingsPage() {
   const { user, notifications, unreadMessageCount } = await requirePortalUser()
@@ -21,7 +23,9 @@ export default async function BuyerSettingsPage() {
         </p>
       </div>
       <div className="space-y-6">
+        {user.role === 'buyer' && <UpgradeToSellerCard />}
         <AccountSettingsForm user={user} />
+        <ThemeSetting />
         <ChangePasswordForm />
       </div>
     </PortalShell>

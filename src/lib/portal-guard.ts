@@ -17,8 +17,14 @@ export type PortalUserSummary = {
   accountStatus: User['accountStatus']
   moaSignedAt: string | null
   moaSignatureName: string
-  gcashNumber: string
-  mayaNumber: string
+  ewalletProvider: string
+  ewalletNumber: string
+  ewalletName: string
+  bankName: string
+  bankAccountNumber: string
+  bankAccountName: string
+  /** Null until the first-time guide is finished or skipped. */
+  onboardingCompletedAt: string | null
   /** Uploaded profile photo, else the Google picture, else '' (initials are shown). */
   avatarUrl: string
   createdAt: string
@@ -101,8 +107,13 @@ export async function requirePortalUser(allowedRoles?: Array<User['role']>) {
     accountStatus: user.accountStatus,
     moaSignedAt: user.moaSignedAt || null,
     moaSignatureName: user.moaSignatureName || '',
-    gcashNumber: user.gcashNumber || '',
-    mayaNumber: user.mayaNumber || '',
+    ewalletProvider: user.ewalletProvider || '',
+    ewalletNumber: user.ewalletNumber || '',
+    ewalletName: user.ewalletName || '',
+    bankName: user.bankName || '',
+    bankAccountNumber: user.bankAccountNumber || '',
+    bankAccountName: user.bankAccountName || '',
+    onboardingCompletedAt: user.onboardingCompletedAt || null,
     avatarUrl:
       user.avatarUrl ||
       (user.avatar && typeof user.avatar === 'object' ? (user.avatar as Media).url || '' : ''),

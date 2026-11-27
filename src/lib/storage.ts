@@ -21,7 +21,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 export const PUBLIC_BUCKET = process.env.SUPABASE_PUBLIC_BUCKET || 'listing-images'
 export const PRIVATE_BUCKET = process.env.SUPABASE_PRIVATE_BUCKET || 'verification-docs'
 
-export type UploadKind = 'listing-photo' | 'avatar' | 'id-photo' | 'selfie' | 'ownership-doc'
+export type UploadKind = 'listing-photo' | 'avatar' | 'id-photo' | 'selfie' | 'ownership-doc' | 'payment-proof'
 
 const MB = 1024 * 1024
 // Netlify functions reject request bodies above ~6 MB, so stay under it. The browser shrinks
@@ -37,6 +37,8 @@ export const UPLOAD_RULES: Record<
   avatar: { bucket: 'public', folder: 'avatars', maxBytes: LIMIT, types: IMAGE_TYPES },
   'id-photo': { bucket: 'private', folder: 'ids', maxBytes: LIMIT, types: IMAGE_TYPES },
   selfie: { bucket: 'private', folder: 'selfies', maxBytes: LIMIT, types: IMAGE_TYPES },
+  // Receipt screenshot a buyer attaches when paying a seller's request in Messages.
+  'payment-proof': { bucket: 'private', folder: 'payment-proofs', maxBytes: LIMIT, types: IMAGE_TYPES },
   'ownership-doc': {
     bucket: 'private',
     folder: 'ownership',

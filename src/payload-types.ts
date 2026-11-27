@@ -326,6 +326,15 @@ export interface User {
   moaSignatureName?: string | null;
   gcashNumber?: string | null;
   mayaNumber?: string | null;
+  gcashName?: string | null;
+  mayaName?: string | null;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountName?: string | null;
+  ewalletProvider?: string | null;
+  ewalletNumber?: string | null;
+  ewalletName?: string | null;
+  onboardingCompletedAt?: string | null;
   warningCount?: number | null;
   savedListings?: (number | Listing)[] | null;
   createdBy?:
@@ -515,7 +524,7 @@ export interface Listing {
   floorAreaSqm?: number | null;
   lotAreaSqm?: number | null;
   description: string;
-  coverImage: number | Media;
+  coverImage?: (number | null) | Media;
   gallery?:
     | {
         image: number | Media;
@@ -644,8 +653,10 @@ export interface Message {
   recipient: number | User;
   listing?: (number | null) | Listing;
   body: string;
-  messageType: 'text' | 'viewing_request' | 'payment_request';
+  messageType: 'text' | 'viewing_request' | 'payment_request' | 'support';
   requestedAmount?: number | null;
+  requestedPaymentType?: ('rent' | 'reservation' | 'security_deposit' | 'purchase') | null;
+  requestedPeriodLabel?: string | null;
   read?: boolean | null;
   createdBy?:
     | ({
@@ -679,11 +690,15 @@ export interface Payment {
   payer: number | User;
   payee: number | User;
   paymentType: 'rent' | 'reservation' | 'security_deposit' | 'purchase';
-  method: 'qrph' | 'gcash' | 'maya' | 'bank_transfer';
+  method: 'qrph' | 'gcash' | 'maya' | 'ewallet' | 'bank_transfer';
   amount: number;
   periodLabel?: string | null;
   status: 'pending_verification' | 'confirmed' | 'rejected' | 'refund_requested' | 'refunded';
   notes?: string | null;
+  requestMessage?: (number | null) | Message;
+  methodLabel?: string | null;
+  payerReference?: string | null;
+  proofPath?: string | null;
   createdBy?:
     | ({
         relationTo: 'admins';
@@ -1093,6 +1108,15 @@ export interface UsersSelect<T extends boolean = true> {
   moaSignatureName?: T;
   gcashNumber?: T;
   mayaNumber?: T;
+  gcashName?: T;
+  mayaName?: T;
+  bankName?: T;
+  bankAccountNumber?: T;
+  bankAccountName?: T;
+  ewalletProvider?: T;
+  ewalletNumber?: T;
+  ewalletName?: T;
+  onboardingCompletedAt?: T;
   warningCount?: T;
   savedListings?: T;
   createdBy?: T;
@@ -1213,6 +1237,8 @@ export interface MessagesSelect<T extends boolean = true> {
   body?: T;
   messageType?: T;
   requestedAmount?: T;
+  requestedPaymentType?: T;
+  requestedPeriodLabel?: T;
   read?: T;
   createdBy?: T;
   updatedBy?: T;
@@ -1234,6 +1260,10 @@ export interface PaymentsSelect<T extends boolean = true> {
   periodLabel?: T;
   status?: T;
   notes?: T;
+  requestMessage?: T;
+  methodLabel?: T;
+  payerReference?: T;
+  proofPath?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;

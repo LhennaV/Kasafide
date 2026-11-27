@@ -1,4 +1,5 @@
 import 'server-only'
+import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { randomBytes } from 'node:crypto'
 import { getPayloadClient } from '@/lib/payload'
@@ -12,6 +13,14 @@ const APP_SESSION_MAX_AGE = 30 * 24 * 60 * 60
 type AppUserSlug = 'users'
 
 export function createAppAuth(appUserCollection: AppUserSlug) {
+  // A user read with payload.find()/create() has no `collection` key (only payload.auth() adds
+  // it), and every access rule checks `user.collection === 'users'`. Without it, a Google or
+  // Supabase sign-in was refused by Payload on create (posting a listing, sending a message) and
+  // the page only said "Could not reach the server".
+  function asAppUser(doc: unknown): User {
+    return Object.assign(doc as object, { collection: appUserCollection }) as User
+  }
+
   async function getLocalSessionUser(): Promise<User | null> {
     const cookieStore = await cookies()
     const token = cookieStore.get(APP_SESSION_COOKIE)?.value
@@ -19,22 +28,12 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
 
     const payload = await getPayloadClient()
     const authHeaders = new Headers({ Authorization: `JWT ${token}` })
+    // payload.auth already reads the user row fresh from the database (Users has
+    // auth.depth: 0, so relations stay as IDs). A second findByID here used to add one more
+    // database round trip to every page load.
     const { user } = await payload.auth({ headers: authHeaders })
     if (!user || user.collection !== appUserCollection) return null
-
-    // Fetch fresh user document with isolated user permissions
-    try {
-      const doc = await payload.findByID({
-        collection: appUserCollection,
-        id: user.id,
-        overrideAccess: false,
-        user: user as User,
-        depth: 1,
-      })
-      return doc as User
-    } catch {
-      return user as User
-    }
+    return user as User
   }
 
   async function getOAuthSessionUser(): Promise<User | null> {
@@ -52,7 +51,7 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
           depth: 1,
           overrideAccess: true,
         })
-        if (found.docs[0]) return found.docs[0] as User
+        if (found.docs[0]) return asAppUser(found.docs[0])
       }
       if (session.user.email) {
         const foundByEmail = await payload.find({
@@ -62,7 +61,7 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
           depth: 1,
           overrideAccess: true,
         })
-        if (foundByEmail.docs[0]) return foundByEmail.docs[0] as User
+        if (foundByEmail.docs[0]) return asAppUser(foundByEmail.docs[0])
       }
       return null
     } catch {
@@ -72,23 +71,35 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
 
   async function getSupabaseSessionUser(): Promise<User | null> {
     try {
-      const supabase = await createSupabaseClient()
-      const {
-        data: { user: sbUser },
-      } = await supabase.auth.getUser()
+      // No Supabase auth cookie → not a Supabase session; skip the client and the network call.
+      const cookieStore = await cookies()
+      if (!cookieStore.getAll().some((c) => c.name.startsWith('sb-') && c.name.includes('auth-token'))) {
+        return null
+      }
 
-      if (!sbUser || !sbUser.email) return null
+      const supabase = await createSupabaseClient()
+      // getClaims() verifies the session JWT locally when the project uses asymmetric signing
+      // keys (and falls back to asking the Auth server otherwise). getUser() asked the Supabase
+      // Auth server on every single page load, which was a large part of the wait.
+      const { data: claimsData } = await supabase.auth.getClaims()
+      const claims = claimsData?.claims
+      const email = typeof claims?.email === 'string' ? claims.email.toLowerCase() : ''
+      if (!email) return null
+      const sbUser = {
+        email,
+        user_metadata: (claims?.user_metadata ?? {}) as Record<string, unknown>,
+      }
 
       const payload = await getPayloadClient()
       const found = await payload.find({
         collection: appUserCollection,
-        where: { email: { equals: sbUser.email.toLowerCase() } },
+        where: { email: { equals: email } },
         limit: 1,
-        depth: 1,
+        depth: 0,
         overrideAccess: true,
       })
 
-      if (found.docs[0]) return found.docs[0] as User
+      if (found.docs[0]) return asAppUser(found.docs[0])
 
       // Auto-create local mirror user for the authenticated Supabase user
       const metadata = sbUser.user_metadata || {}
@@ -113,19 +124,21 @@ export function createAppAuth(appUserCollection: AppUserSlug) {
         },
       })
 
-      return created as User
+      return asAppUser(created)
     } catch {
       return null
     }
   }
 
-  async function getCurrentUser(): Promise<User | null> {
+  // cache(): within one request (page + its server components + metadata) the user is looked
+  // up once, not once per caller.
+  const getCurrentUser = cache(async (): Promise<User | null> => {
     const localUser = await getLocalSessionUser()
     if (localUser) return localUser
     const sbUser = await getSupabaseSessionUser()
     if (sbUser) return sbUser
     return await getOAuthSessionUser()
-  }
+  })
 
   async function loginWithEmailPassword(email: string, password: string): Promise<User> {
     const payload = await getPayloadClient()

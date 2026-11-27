@@ -54,7 +54,7 @@ export function IdentityVerificationForm({
   const ready = last4.length === 4 && idPhoto && selfie && !busy
 
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 w-full space-y-5">
+    <div data-tour="verify-form" className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 w-full space-y-5">
       <div className="flex items-center justify-between">
         <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--text-muted)]">
           Current Verification Status

@@ -76,7 +76,7 @@ export function BrowseCatalogClient({
         </button>
       </div>
 
-      <div className="hidden md:grid grid-cols-6 gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] mb-6">
+      <div data-tour="browse-filters" className="hidden md:grid grid-cols-6 gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] mb-6">
         <select
           value={barangay}
           onChange={(e) => setBarangay(e.target.value)}

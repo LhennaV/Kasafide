@@ -122,7 +122,11 @@ export function SellerPostFormClient({
             ownershipDocType,
             photoUrls: photos.map((p) => p.url),
             ownershipDocPath: ownershipDoc.path,
-          }).catch(() => ({ ok: false, error: 'Could not reach the server. Please try again.' }))
+          }).catch((err) => {
+            // Keep the real reason visible in the browser console instead of swallowing it.
+            console.error('createSellerListingAction failed:', err)
+            return { ok: false, error: 'Could not reach the server. Please try again.' }
+          })
           if (!res.ok) {
             setFeedback(res.error || 'Could not submit listing.')
             return
@@ -453,6 +457,7 @@ export function SellerPostFormClient({
 
       <button
         type="submit"
+        data-tour="post-submit"
         disabled={isPending || uploading !== '' || submitted}
         className="w-full py-3.5 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >

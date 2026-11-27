@@ -73,6 +73,7 @@ export function PropertyCard({
             type="button"
             disabled={isPending}
             onClick={onToggleSave}
+            data-tour="save-heart"
             aria-label={isSaved ? 'Remove from saved' : 'Save property'}
             className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center backdrop-blur-md border transition cursor-pointer ${
               isSaved

@@ -246,6 +246,12 @@ export async function createSellerListingAction(input: {
   if (!user || (user.role !== 'seller' && !['admin', 'superadmin', 'super_duper_admin'].includes(user.role))) {
     return { ok: false, error: 'Only sellers can post property listings.' }
   }
+  if (user.role === 'seller' && !user.moaSignedAt) {
+    return {
+      ok: false,
+      error: 'Please sign the Memorandum of Agreement (MOA) first. Open it from your profile menu.',
+    }
+  }
 
   if (!input.title.trim() || !input.address.trim() || !input.barangayId || input.price <= 0) {
     return { ok: false, error: 'Please complete title, barangay, address, and a valid price.' }
@@ -264,17 +270,9 @@ export async function createSellerListingAction(input: {
     }
   }
 
+  // The cover is the first uploaded photo (photoUrls[0]); no Payload media document is needed.
+  // The old code borrowed a random existing media file here and failed when there was none.
   const payload = await getPayloadClient()
-  const mediaList = await payload.find({
-    collection: 'media',
-    user,
-    overrideAccess: false,
-    limit: 5,
-  })
-  const defaultCover = mediaList.docs[0]?.id
-  if (!defaultCover) {
-    return { ok: false, error: 'No media available for cover photo.' }
-  }
 
   const slugBase = input.title
     .toLowerCase()
@@ -304,7 +302,6 @@ export async function createSellerListingAction(input: {
       floorAreaSqm: Number(input.floorAreaSqm) || 0,
       lotAreaSqm: Number(input.lotAreaSqm) || 0,
       description: input.description.trim() || 'Property submitted for Kasafide verification.',
-      coverImage: defaultCover,
       amenities: input.amenities.filter(Boolean).map((label) => ({ label })),
       priceNegotiable: Boolean(input.priceNegotiable),
       hasMultipleUnits: Boolean(input.hasMultipleUnits),
@@ -468,16 +465,12 @@ export async function updateProfileSettingsAction(input: {
   lastName: string
   phone?: string
   bio?: string
-  gcashNumber?: string
-  mayaNumber?: string
 }): Promise<ActionResult> {
   const user = await appAuth.getCurrentUser()
   if (!user) return { ok: false, error: 'Unauthorized' }
 
   for (const [label, value] of [
     ['Phone number', input.phone],
-    ['GCash number', input.gcashNumber],
-    ['Maya number', input.mayaNumber],
   ] as const) {
     const v = value?.trim() || ''
     if (v && !isPhMobile(v)) {
@@ -500,11 +493,9 @@ export async function updateProfileSettingsAction(input: {
       lastName: input.lastName.trim() || user.lastName,
       phone: input.phone?.trim() || '',
       bio: input.bio?.trim() || '',
-      gcashNumber: input.gcashNumber?.trim() || '',
-      mayaNumber: input.mayaNumber?.trim() || '',
     },
   })
-  return { ok: true, message: 'Profile and payment details saved!' }
+  return { ok: true, message: 'Profile saved!' }
 }
 
 /** 09XXXXXXXXX or +639XXXXXXXXX (spaces and dashes ignored). */

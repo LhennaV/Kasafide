@@ -7,7 +7,7 @@ import { markAllNotificationsReadAction } from '@/app/actions/kasafide'
 import { signOutInPlace } from '@/lib/app-session-browser'
 import type { PortalNotificationItem, PortalUserSummary } from '@/lib/portal-guard'
 import { KasafideLogo } from './KasafideLogo'
-import { ThemeToggle } from './ThemeToggle'
+import { GuidedTour, startGuidedTour } from './GuidedTour'
 import { Toaster } from './Toaster'
 import { withToast } from '@/lib/toast'
 
@@ -16,7 +16,7 @@ type NavItem = {
   label: string
   shortLabel: string
   href: string
-  icon: 'grid' | 'heart' | 'message' | 'wallet' | 'home' | 'users' | 'shield' | 'flag' | 'chart' | 'plus' | 'doc' | 'calendar'
+  icon: 'grid' | 'heart' | 'message' | 'wallet' | 'home' | 'users' | 'shield' | 'flag' | 'chart' | 'plus' | 'doc' | 'calendar' | 'headset'
 }
 
 function NavIcon({ name, className = 'w-4 h-4' }: { name: NavItem['icon']; className?: string }) {
@@ -100,6 +100,13 @@ function NavIcon({ name, className = 'w-4 h-4' }: { name: NavItem['icon']; class
           <line x1="3" y1="10" x2="21" y2="10" />
         </svg>
       )
+    case 'headset':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+          <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+          <path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z" />
+        </svg>
+      )
     case 'grid':
     default:
       return (
@@ -148,6 +155,7 @@ function getRoleNavigation(role: PortalUserSummary['role']): {
         { id: 'dashboard', label: 'Dashboard', shortLabel: 'Home', href: '/module/admin', icon: 'grid' },
         { id: 'listings', label: 'Listings Management', shortLabel: 'Listings', href: '/module/admin/listings', icon: 'home' },
         { id: 'users', label: 'Users', shortLabel: 'Users', href: '/module/admin/users', icon: 'users' },
+        { id: 'support', label: 'Live Support', shortLabel: 'Support', href: '/module/admin/support', icon: 'headset' },
         { id: 'payments', label: 'Payments', shortLabel: 'Pay', href: '/module/admin/payments', icon: 'wallet' },
         { id: 'reports', label: 'Reports', shortLabel: 'Reports', href: '/module/admin/reports', icon: 'flag' },
         { id: 'analytics', label: 'Analytics', shortLabel: 'Stats', href: '/module/admin/analytics', icon: 'chart' },
@@ -167,6 +175,7 @@ function getRoleNavigation(role: PortalUserSummary['role']): {
         { id: 'admins', label: 'Admin Management', shortLabel: 'Admins', href: '/module/super-admin/admins', icon: 'users' },
         { id: 'audit-trail', label: 'Audit Trail', shortLabel: 'Audit', href: '/module/super-admin/audit-trail', icon: 'flag' },
         { id: 'reports', label: 'System Reports', shortLabel: 'Reports', href: '/module/super-admin/reports', icon: 'chart' },
+        { id: 'support', label: 'Live Support', shortLabel: 'Support', href: '/module/super-admin/support', icon: 'headset' },
       ],
       secondary: [
         { label: 'Admin Hub · Dashboard', href: '/module/admin' },
@@ -188,6 +197,7 @@ function getRoleNavigation(role: PortalUserSummary['role']): {
       { id: 'payments', label: 'Payments', shortLabel: 'Payments', href: '/module/buyer/payments', icon: 'wallet' },
     ],
     secondary: [
+      { label: 'Become a Seller', href: '/module/buyer/become-seller' },
       { label: 'Identity Verification', href: '/module/buyer/verification' },
       { label: 'Reviews & Feedback', href: '/module/buyer/reviews' },
       { label: 'Notifications', href: '/module/buyer/notifications' },
@@ -223,9 +233,14 @@ export function PortalShell({
   const homeHref = nav.primary[0].href
   // Pages that used to be in the sidebar's "More Tools" and have no other link on desktop
   // (profile/settings/verification/help are already in the menu, notifications on the bell).
-  const menuExtras = nav.secondary.filter(
-    (s) => !/\/(profile|settings|verification|help|notifications)$/.test(s.href),
-  )
+  // "Become a Seller" already has its own card on the buyer's Profile & Settings pages, and the
+  // super-admin's four "Admin Hub · …" links collapse into one entry here.
+  const menuExtras = nav.secondary
+    .filter((s) => !/\/(profile|settings|verification|help|notifications|become-seller)$/.test(s.href))
+    .filter((s) => !s.label.startsWith('Admin Hub') || s.href === '/module/admin')
+    .map((s) => (s.label.startsWith('Admin Hub') ? { ...s, label: 'Admin Hub' } : s))
+  const needsVerification =
+    (user.role === 'buyer' || user.role === 'seller') && user.accountStatus !== 'verified'
 
   // A full page load (not router.push) after signing out, so no page already rendered for
   // the signed-in user stays in the client router cache and opens again without a login.
@@ -257,6 +272,7 @@ export function PortalShell({
                 <Link
                   key={item.id}
                   href={item.href}
+                  data-tour={`nav-${item.id}`}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold transition relative ${
                     active
                       ? 'bg-[#FF8A65]/18 text-[#FBF6F0] border-l-3 border-[#FF8A65]'
@@ -320,8 +336,6 @@ export function PortalShell({
           </div>
 
           <div className="flex items-center gap-2">
-            <ThemeToggle className="w-9 h-9" />
-
             {/* Notification Bell */}
             <div className="relative">
               <button
@@ -403,6 +417,7 @@ export function PortalShell({
                   setNotifOpen(false)
                 }}
                 aria-label="Profile menu"
+                data-tour="profile-menu"
                 className="w-9 h-9 rounded-full overflow-hidden bg-[var(--primary)]/20 border-2 border-[var(--primary)]/50 text-[var(--primary)] text-xs font-extrabold flex items-center justify-center cursor-pointer"
               >
                 {user.avatarUrl ? (
@@ -414,69 +429,97 @@ export function PortalShell({
               </button>
 
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl overflow-hidden z-50">
+                <div className="absolute right-0 mt-2 w-60 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl overflow-hidden z-50">
                   <div className="px-4 py-3 border-b border-[var(--border)]">
                     <div className="font-extrabold text-sm text-[var(--text)] truncate">
                       {user.fullName}
                     </div>
-                    <div className="text-[11px] font-bold text-[var(--primary)] capitalize">
-                      {user.role === 'super_duper_admin' ? 'Super Admin' : user.role} &middot;{' '}
-                      {user.accountStatus}
+                    <div className="mt-1 flex items-center gap-1.5 text-[11px] font-bold">
+                      <span className="text-[var(--text-muted)] capitalize">
+                        {user.role === 'super_duper_admin' || user.role === 'superadmin' ? 'Super Admin' : user.role}
+                      </span>
+                      {(user.role === 'buyer' || user.role === 'seller') && (
+                        <span
+                          className={`px-2 py-0.5 rounded-full capitalize ${
+                            user.accountStatus === 'verified'
+                              ? 'bg-[var(--success)]/15 text-[var(--success)]'
+                              : 'bg-[var(--primary)]/15 text-[var(--primary)]'
+                          }`}
+                        >
+                          {user.accountStatus}
+                        </span>
+                      )}
                     </div>
                   </div>
+
                   <div className="py-1.5 text-xs font-semibold">
+                    {needsVerification && (
+                      <Link
+                        href={`/module/${nav.folder}/verification`}
+                        onClick={() => setProfileOpen(false)}
+                        className="block mx-2 mb-1 px-3 py-2 rounded-xl bg-[var(--primary)]/12 text-[var(--primary)] font-extrabold hover:bg-[var(--primary)]/20"
+                      >
+                        Get Verified &rarr;
+                      </Link>
+                    )}
                     <Link
                       href={`/module/${nav.folder}/profile`}
                       onClick={() => setProfileOpen(false)}
                       className="block px-4 py-2 hover:bg-[var(--surface-soft)]"
                     >
-                      View Profile
+                      Profile &amp; Settings
                     </Link>
-                    <Link
-                      href={`/module/${nav.folder}/settings`}
-                      onClick={() => setProfileOpen(false)}
-                      className="block px-4 py-2 hover:bg-[var(--surface-soft)]"
-                    >
-                      Account Settings
-                    </Link>
+                    {menuExtras.map((sub) => (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={() => setProfileOpen(false)}
+                        className="block px-4 py-2 hover:bg-[var(--surface-soft)]"
+                      >
+                        {sub.label}
+                      </Link>
+                    ))}
                     {(user.role === 'buyer' || user.role === 'seller') && (
-                      <>
-                        <Link
-                          href={`/module/${nav.folder}/verification`}
-                          onClick={() => setProfileOpen(false)}
-                          className="block px-4 py-2 text-[var(--primary)] hover:bg-[var(--surface-soft)]"
-                        >
-                          Identity Verification
-                        </Link>
+                      <div className="flex items-center hover:bg-[var(--surface-soft)]">
                         <Link
                           href={`/module/${nav.folder}/help`}
                           onClick={() => setProfileOpen(false)}
-                          className="block px-4 py-2 hover:bg-[var(--surface-soft)]"
+                          className="flex-1 px-4 py-2"
                         >
                           Help &amp; Support
                         </Link>
-                      </>
-                    )}
-                    {menuExtras.length > 0 && (
-                      <div className="my-1.5 border-t border-[var(--border)] pt-1.5">
-                        {menuExtras.map((sub) => (
-                          <Link
-                            key={sub.href}
-                            href={sub.href}
-                            onClick={() => setProfileOpen(false)}
-                            className="block px-4 py-2 hover:bg-[var(--surface-soft)]"
-                          >
-                            {sub.label}
-                          </Link>
-                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileOpen(false)
+                            startGuidedTour(user.role)
+                          }}
+                          className="mr-3 px-2 py-0.5 rounded-full border border-[var(--border)] text-[10px] font-bold text-[var(--text-muted)] hover:text-[var(--primary)] hover:border-[var(--primary)] cursor-pointer"
+                        >
+                          Take the tour
+                        </button>
                       </div>
                     )}
+                    {!(user.role === 'buyer' || user.role === 'seller') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false)
+                          startGuidedTour(user.role)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-[var(--surface-soft)] cursor-pointer"
+                      >
+                        Take the tour
+                      </button>
+                    )}
+                  </div>
+                  <div className="border-t border-[var(--border)] py-1.5 text-xs font-semibold">
                     <button
                       type="button"
                       onClick={() => void logout()}
                       className="w-full text-left px-4 py-2 text-[var(--danger)] hover:bg-[var(--danger)]/10 cursor-pointer"
                     >
-                      Logout
+                      Log out
                     </button>
                   </div>
                 </div>
@@ -503,6 +546,7 @@ export function PortalShell({
               <Link
                 key={item.id}
                 href={item.href}
+                data-tour={`nav-${item.id}`}
                 className={`flex-1 flex flex-col items-center justify-center gap-1 relative ${
                   active ? 'text-[#FF8A65]' : 'text-white/65'
                 }`}
@@ -526,6 +570,7 @@ export function PortalShell({
           <button
             type="button"
             onClick={() => setMoreSheetOpen(true)}
+            data-tour="nav-more"
             className="flex-1 flex flex-col items-center justify-center gap-1 text-white/75 cursor-pointer"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -583,6 +628,16 @@ export function PortalShell({
 
             <button
               type="button"
+              onClick={() => {
+                setMoreSheetOpen(false)
+                startGuidedTour(user.role)
+              }}
+              className="w-full py-3 rounded-xl bg-[var(--primary)]/15 text-[var(--primary)] font-extrabold text-sm"
+            >
+              Kasafide Guide (how it works)
+            </button>
+            <button
+              type="button"
               onClick={() => void logout()}
               className="w-full py-3 rounded-xl bg-[var(--danger)]/15 text-[var(--danger)] font-extrabold text-sm"
             >
@@ -592,6 +647,7 @@ export function PortalShell({
         </div>
       )}
 
+      <GuidedTour user={user} />
       <Toaster />
     </div>
   )

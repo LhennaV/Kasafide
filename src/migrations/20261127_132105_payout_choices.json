@@ -660,6 +660,60 @@
           "primaryKey": false,
           "notNull": false
         },
+        "gcash_name": {
+          "name": "gcash_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "maya_name": {
+          "name": "maya_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_name": {
+          "name": "bank_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_account_number": {
+          "name": "bank_account_number",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_account_name": {
+          "name": "bank_account_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ewallet_provider": {
+          "name": "ewallet_provider",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ewallet_number": {
+          "name": "ewallet_number",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ewallet_name": {
+          "name": "ewallet_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "onboarding_completed_at": {
+          "name": "onboarding_completed_at",
+          "type": "timestamp(3) with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
         "warning_count": {
           "name": "warning_count",
           "type": "numeric",
@@ -1330,6 +1384,60 @@
         "version_maya_number": {
           "name": "version_maya_number",
           "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_gcash_name": {
+          "name": "version_gcash_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_maya_name": {
+          "name": "version_maya_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_bank_name": {
+          "name": "version_bank_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_bank_account_number": {
+          "name": "version_bank_account_number",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_bank_account_name": {
+          "name": "version_bank_account_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_ewallet_provider": {
+          "name": "version_ewallet_provider",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_ewallet_number": {
+          "name": "version_ewallet_number",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_ewallet_name": {
+          "name": "version_ewallet_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_onboarding_completed_at": {
+          "name": "version_onboarding_completed_at",
+          "type": "timestamp(3) with time zone",
           "primaryKey": false,
           "notNull": false
         },
@@ -2803,7 +2911,7 @@
           "name": "cover_image_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "price_negotiable": {
           "name": "price_negotiable",
@@ -3610,7 +3718,7 @@
           "name": "version_cover_image_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "version_price_negotiable": {
           "name": "version_price_negotiable",
@@ -5004,6 +5112,19 @@
           "primaryKey": false,
           "notNull": false
         },
+        "requested_payment_type": {
+          "name": "requested_payment_type",
+          "type": "enum_messages_requested_payment_type",
+          "typeSchema": "payload",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_period_label": {
+          "name": "requested_period_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "read": {
           "name": "read",
           "type": "boolean",
@@ -5372,6 +5493,19 @@
         "version_requested_amount": {
           "name": "version_requested_amount",
           "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_requested_payment_type": {
+          "name": "version_requested_payment_type",
+          "type": "enum__messages_v_version_requested_payment_type",
+          "typeSchema": "payload",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_requested_period_label": {
+          "name": "version_requested_period_label",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
@@ -5837,6 +5971,30 @@
           "primaryKey": false,
           "notNull": false
         },
+        "request_message_id": {
+          "name": "request_message_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "method_label": {
+          "name": "method_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payer_reference": {
+          "name": "payer_reference",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "proof_path": {
+          "name": "proof_path",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamp(3) with time zone",
@@ -5928,6 +6086,21 @@
           "method": "btree",
           "with": {}
         },
+        "payments_request_message_idx": {
+          "name": "payments_request_message_idx",
+          "columns": [
+            {
+              "expression": "request_message_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "payments_updated_at_idx": {
           "name": "payments_updated_at_idx",
           "columns": [
@@ -5995,6 +6168,20 @@
           "schemaTo": "payload",
           "columnsFrom": [
             "payee_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "payments_request_message_id_messages_id_fk": {
+          "name": "payments_request_message_id_messages_id_fk",
+          "tableFrom": "payments",
+          "tableTo": "messages",
+          "schemaTo": "payload",
+          "columnsFrom": [
+            "request_message_id"
           ],
           "columnsTo": [
             "id"
@@ -6257,6 +6444,30 @@
           "primaryKey": false,
           "notNull": false
         },
+        "version_request_message_id": {
+          "name": "version_request_message_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_method_label": {
+          "name": "version_method_label",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_payer_reference": {
+          "name": "version_payer_reference",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version_proof_path": {
+          "name": "version_proof_path",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
         "version_updated_at": {
           "name": "version_updated_at",
           "type": "timestamp(3) with time zone",
@@ -6365,6 +6576,21 @@
           "columns": [
             {
               "expression": "version_status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "_payments_v_version_version_request_message_idx": {
+          "name": "_payments_v_version_version_request_message_idx",
+          "columns": [
+            {
+              "expression": "version_request_message_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -6486,6 +6712,20 @@
           "schemaTo": "payload",
           "columnsFrom": [
             "version_payee_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "_payments_v_version_request_message_id_messages_id_fk": {
+          "name": "_payments_v_version_request_message_id_messages_id_fk",
+          "tableFrom": "_payments_v",
+          "tableTo": "messages",
+          "schemaTo": "payload",
+          "columnsFrom": [
+            "version_request_message_id"
           ],
           "columnsTo": [
             "id"
@@ -14004,7 +14244,18 @@
       "values": [
         "text",
         "viewing_request",
-        "payment_request"
+        "payment_request",
+        "support"
+      ]
+    },
+    "payload.enum_messages_requested_payment_type": {
+      "name": "enum_messages_requested_payment_type",
+      "schema": "payload",
+      "values": [
+        "rent",
+        "reservation",
+        "security_deposit",
+        "purchase"
       ]
     },
     "payload.enum__messages_v_version_message_type": {
@@ -14013,7 +14264,18 @@
       "values": [
         "text",
         "viewing_request",
-        "payment_request"
+        "payment_request",
+        "support"
+      ]
+    },
+    "payload.enum__messages_v_version_requested_payment_type": {
+      "name": "enum__messages_v_version_requested_payment_type",
+      "schema": "payload",
+      "values": [
+        "rent",
+        "reservation",
+        "security_deposit",
+        "purchase"
       ]
     },
     "payload.enum_payments_payment_type": {
@@ -14033,6 +14295,7 @@
         "qrph",
         "gcash",
         "maya",
+        "ewallet",
         "bank_transfer"
       ]
     },
@@ -14064,6 +14327,7 @@
         "qrph",
         "gcash",
         "maya",
+        "ewallet",
         "bank_transfer"
       ]
     },
@@ -14241,6 +14505,6 @@
     "tables": {},
     "columns": {}
   },
-  "id": "23f12ba5-282d-42d4-a687-5f4d4d5a027d",
+  "id": "43e98a90-dae2-4465-ad75-e3bc4a3c4861",
   "prevId": "00000000-0000-0000-0000-000000000000"
 }

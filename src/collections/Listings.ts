@@ -153,10 +153,11 @@ export const Listings: CollectionConfig = {
     },
     { name: 'description', type: 'textarea', required: true },
     {
+      // Optional: listings posted from the seller form carry their own photos in photoUrls
+      // (Supabase Storage). This stays for listings added through the Payload admin panel.
       name: 'coverImage',
       type: 'upload',
       relationTo: 'media',
-      required: true,
     },
     {
       name: 'gallery',

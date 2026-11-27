@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { changePasswordAction, updateProfileSettingsAction } from '@/app/actions/kasafide'
 import type { PortalUserSummary } from '@/lib/portal-guard'
@@ -34,8 +35,6 @@ export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
     lastName: user.lastName,
     phone: user.phone,
     bio: user.bio,
-    gcashNumber: user.gcashNumber,
-    mayaNumber: user.mayaNumber,
   }
   const [saved, setSaved] = useState(initial)
   const [form, setForm] = useState(initial)
@@ -47,8 +46,6 @@ export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
   )
   const errors = {
     phone: phoneError(form.phone),
-    gcashNumber: user.role === 'seller' ? phoneError(form.gcashNumber) : '',
-    mayaNumber: user.role === 'seller' ? phoneError(form.mayaNumber) : '',
     name: !form.firstName.trim() || !form.lastName.trim() ? 'First and last name are required.' : '',
   }
   const hasError = Object.values(errors).some(Boolean)
@@ -121,22 +118,13 @@ export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
       </div>
 
       {user.role === 'seller' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[var(--border)]">
-          <PhoneField
-            label="GCash Payout Number"
-            value={form.gcashNumber}
-            onChange={set('gcashNumber')}
-            error={errors.gcashNumber}
-            placeholder="09171234567"
-          />
-          <PhoneField
-            label="Maya Payout Number"
-            value={form.mayaNumber}
-            onChange={set('mayaNumber')}
-            error={errors.mayaNumber}
-            placeholder="09171234567"
-          />
-        </div>
+        <p className="pt-3 border-t border-[var(--border)] text-xs text-[var(--text-muted)]">
+          Where buyers pay you (e-wallet or bank) is set in{' '}
+          <Link href="/module/seller/payments" className="font-bold text-[var(--primary)]">
+            Payments &rarr; Payout Settings
+          </Link>
+          .
+        </p>
       )}
 
       <div>

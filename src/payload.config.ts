@@ -19,6 +19,7 @@ import { VerificationSubmissions } from './collections/VerificationSubmissions'
 import { ListingReports } from './collections/ListingReports'
 import { Notifications } from './collections/Notifications'
 import { AuditLogs } from './collections/AuditLogs'
+import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -57,6 +58,10 @@ export default buildConfig({
     },
     schemaName: 'payload',
     push: false,
+    // A deployed server (NODE_ENV=production: `next start`, Vercel) runs any migration in
+    // src/migrations/ that this database hasn't run yet, before serving. Already-run ones are
+    // skipped (they're recorded in payload_migrations). `npm run dev` does the same via its script.
+    prodMigrations: migrations,
   }),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

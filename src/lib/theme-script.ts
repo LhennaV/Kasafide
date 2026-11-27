@@ -1,12 +1,17 @@
 /**
- * Runs in <head> before first paint (see layout.tsx). Public pages follow the device's
- * light/dark setting; inside the portal (/module/...) a choice saved by ThemeToggle wins.
- * SystemTheme.tsx keeps this in step after client-side navigation and device changes.
+ * Runs in <head> before first paint (see layout.tsx). Every page follows the device's light/dark
+ * setting unless the person picked Light or Dark in Account Settings → Appearance (ThemeSetting).
+ * SystemTheme.tsx keeps this in step after navigation, device changes and a new choice.
+ *
+ * The key is new on purpose: the old header button saved 'kf_theme', and ignoring it puts
+ * everyone back on System default.
  */
+export const THEME_KEY = 'kf_theme_pref'
+export const THEME_EVENT = 'kf-theme-change'
+
 export const THEME_INIT_SCRIPT = `(function(){
   try{
-    var d=document.documentElement,s=null;
-    if(location.pathname.indexOf('/module/')===0){s=localStorage.getItem('kf_theme');}
+    var d=document.documentElement,s=localStorage.getItem('${THEME_KEY}');
     d.setAttribute('data-theme',s==='light'||s==='dark'?s:(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
   }catch(e){}
   try{

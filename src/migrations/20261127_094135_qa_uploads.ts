@@ -2,7 +2,9 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "payload"."listings" ADD COLUMN IF NOT EXISTS "ownership_doc_path" varchar;
+   ALTER TABLE "payload"."listings" ALTER COLUMN "cover_image_id" DROP NOT NULL;
+  ALTER TABLE "payload"."_listings_v" ALTER COLUMN "version_cover_image_id" DROP NOT NULL;
+  ALTER TABLE "payload"."listings" ADD COLUMN IF NOT EXISTS "ownership_doc_path" varchar;
   ALTER TABLE "payload"."listings" ADD COLUMN IF NOT EXISTS "photo_urls" jsonb;
   ALTER TABLE "payload"."_listings_v" ADD COLUMN IF NOT EXISTS "version_ownership_doc_path" varchar;
   ALTER TABLE "payload"."_listings_v" ADD COLUMN IF NOT EXISTS "version_photo_urls" jsonb;
@@ -14,7 +16,9 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
-   ALTER TABLE "payload"."listings" DROP COLUMN IF EXISTS "ownership_doc_path";
+   ALTER TABLE "payload"."listings" ALTER COLUMN "cover_image_id" SET NOT NULL;
+  ALTER TABLE "payload"."_listings_v" ALTER COLUMN "version_cover_image_id" SET NOT NULL;
+  ALTER TABLE "payload"."listings" DROP COLUMN IF EXISTS "ownership_doc_path";
   ALTER TABLE "payload"."listings" DROP COLUMN IF EXISTS "photo_urls";
   ALTER TABLE "payload"."_listings_v" DROP COLUMN IF EXISTS "version_ownership_doc_path";
   ALTER TABLE "payload"."_listings_v" DROP COLUMN IF EXISTS "version_photo_urls";

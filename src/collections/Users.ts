@@ -11,6 +11,10 @@ import { invalidateListingCaches } from '../hooks/revalidateKasafide'
 export const Users: CollectionConfig = {
   slug: 'users',
   auth: {
+    // The signed-in user is read on every page load. At Payload's default depth (2) that also
+    // loaded every saved listing with its seller, barangay and photos; nothing uses those
+    // (saved listings are only needed as IDs), so keep relations unpopulated.
+    depth: 0,
     forgotPassword: {
       // Payload's default link opens /admin/reset/<token> (the CMS panel). Members reset theirs on
       // the Kasafide page instead. The mail itself still needs an email adapter in payload.config.ts.
@@ -250,6 +254,42 @@ export const Users: CollectionConfig = {
           },
         },
       ],
+    },
+    // Where a seller receives money. Shown to a buyer only inside the "Pay now" window of a
+    // payment request the seller sent them (see portal-threads.ts), never on a public page.
+    {
+      type: 'row',
+      fields: [
+        { name: 'gcashName', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+        { name: 'mayaName', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+      ],
+    },
+    {
+      type: 'row',
+      fields: [
+        { name: 'bankName', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+        { name: 'bankAccountNumber', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+        { name: 'bankAccountName', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+      ],
+    },
+    // The seller's e-wallet: any provider (GCash, Maya, ShopeePay, GrabPay, Coins.ph or one they
+    // type). gcashNumber/mayaNumber above are the older per-provider fields, copied into these by
+    // the 20261127_132105_payout_choices migration and no longer written.
+    {
+      type: 'row',
+      fields: [
+        { name: 'ewalletProvider', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+        { name: 'ewalletNumber', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+        { name: 'ewalletName', type: 'text', access: { read: ({ req }) => Boolean(req.user) } },
+      ],
+    },
+    {
+      // Empty until the person finishes or skips the first-time guide; the portal shows the guide
+      // while this is empty.
+      name: 'onboardingCompletedAt',
+      type: 'date',
+      access: { read: isSelfOrStaffField },
+      admin: { position: 'sidebar' },
     },
     {
       name: 'warningCount',

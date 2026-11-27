@@ -1,6 +1,6 @@
 'use client'
 
-export type UploadKind = 'listing-photo' | 'avatar' | 'id-photo' | 'selfie' | 'ownership-doc'
+export type UploadKind = 'listing-photo' | 'avatar' | 'id-photo' | 'selfie' | 'ownership-doc' | 'payment-proof'
 
 export type UploadResult =
   | { ok: true; path: string; url: string | null }

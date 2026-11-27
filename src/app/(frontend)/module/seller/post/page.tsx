@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getPayloadClient } from '@/lib/payload'
 import { requirePortalUser } from '@/lib/portal-guard'
 import { PortalShell } from '@/components/kasafide/PortalShell'
@@ -47,7 +48,24 @@ export default async function SellerPostPage() {
           All new submissions enter Kasafide Admin review to verify title authenticity before going public.
         </p>
       </div>
-      <SellerPostFormClient barangays={barangays} />
+      <div data-tour="post-form">
+      {user.role === 'seller' && !user.moaSignedAt ? (
+        <div className="rounded-3xl border border-[var(--warning)]/40 bg-[var(--warning)]/10 p-8 text-center">
+          <h2 className="text-lg font-black text-[var(--text)] mb-1">Sign the MOA first</h2>
+          <p className="text-sm text-[var(--text-soft)] mb-5">
+            Every seller signs Kasafide&apos;s Memorandum of Agreement before posting a property.
+          </p>
+          <Link
+            href="/module/seller/moa"
+            className="inline-block px-6 py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm"
+          >
+            Read &amp; sign the MOA
+          </Link>
+        </div>
+      ) : (
+        <SellerPostFormClient barangays={barangays} />
+      )}
+      </div>
     </PortalShell>
   )
 }
