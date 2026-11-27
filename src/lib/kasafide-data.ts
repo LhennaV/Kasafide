@@ -58,7 +58,12 @@ export function mapListingDoc(doc: Listing): ListingCardView {
   const cover =
     typeof doc.coverImage === 'object' && doc.coverImage ? (doc.coverImage as Media) : null
 
-  const galleryItems = (doc.gallery ?? [])
+  // The seller's own uploaded photos (Supabase Storage) win over the placeholder media.
+  const ownPhotos = (Array.isArray(doc.photoUrls) ? doc.photoUrls : [])
+    .filter((u): u is string => typeof u === 'string' && u.startsWith('https://'))
+    .map((url) => ({ url, alt: doc.title, caption: undefined as string | undefined }))
+
+  const mediaGallery = (doc.gallery ?? [])
     .map((item) => {
       const img = typeof item.image === 'object' && item.image ? (item.image as Media) : null
       if (!img?.url) return null
@@ -69,8 +74,9 @@ export function mapListingDoc(doc: Listing): ListingCardView {
       }
     })
     .filter((x): x is NonNullable<typeof x> => Boolean(x))
+  const galleryItems = ownPhotos.length ? ownPhotos : mediaGallery
 
-  const coverUrl = cover?.url || '/assets/img/house_image.jpg'
+  const coverUrl = ownPhotos[0]?.url || cover?.url || '/assets/img/house_image.jpg'
   const coverAlt = cover?.alt || doc.title
 
   return {

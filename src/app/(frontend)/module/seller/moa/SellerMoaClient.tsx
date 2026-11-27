@@ -19,7 +19,7 @@ export function SellerMoaClient({
   const [msg, setMsg] = useState<string | null>(null)
 
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 max-w-3xl space-y-5">
+    <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 w-full space-y-5">
       <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
         <div>
           <div className="text-xs font-extrabold uppercase tracking-wider text-[var(--primary)]">

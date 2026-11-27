@@ -16,7 +16,7 @@ export default async function BuyerNotificationsPage() {
           Viewing confirmations, payment updates, and verification notices.
         </p>
       </div>
-      <div className="space-y-3 max-w-3xl">
+      <div className="space-y-3 w-full">
         {notifications.map((n) => (
           <div
             key={n.id}

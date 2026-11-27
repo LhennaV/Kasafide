@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { getPayloadClient } from '@/lib/payload'
 import { mapListingDoc } from '@/lib/kasafide-data'
 import { requirePortalUser } from '@/lib/portal-guard'
+import { signedUrl } from '@/lib/storage'
 import { PortalShell } from '@/components/kasafide/PortalShell'
 import type { Listing, User } from '@/payload-types'
 import { AdminListingDetailActions } from './AdminListingDetailClient'
@@ -65,10 +66,15 @@ export default async function AdminListingDetailPage({
 
   const l = mapListingDoc(doc)
   const seller = typeof doc.seller === 'object' && doc.seller ? (doc.seller as User) : null
-  const photos = [
-    ...(l.coverUrl ? [{ url: l.coverUrl, alt: l.coverAlt, caption: 'Cover photo' }] : []),
-    ...l.gallery,
-  ]
+  // With seller-uploaded photos the cover is already gallery[0]; don't show it twice.
+  const photos =
+    l.gallery[0]?.url === l.coverUrl
+      ? l.gallery.map((p, i) => (i === 0 ? { ...p, caption: 'Cover photo' } : p))
+      : [
+          ...(l.coverUrl ? [{ url: l.coverUrl, alt: l.coverAlt, caption: 'Cover photo' }] : []),
+          ...l.gallery,
+        ]
+  const ownershipDocUrl = await signedUrl(doc.ownershipDocPath)
 
   return (
     <PortalShell
@@ -214,6 +220,18 @@ export default async function AdminListingDetailPage({
             <p className="text-sm font-extrabold text-[var(--text)]">
               {DOC_LABELS[l.ownershipDocType] ?? l.ownershipDocType ?? '—'}
             </p>
+            {ownershipDocUrl ? (
+              <a
+                href={ownershipDocUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-2 px-3 py-1.5 rounded-xl bg-[var(--primary)]/15 text-[var(--primary)] text-xs font-extrabold hover:underline"
+              >
+                View attached document &rarr;
+              </a>
+            ) : (
+              <p className="text-xs text-[var(--text-muted)] mt-1.5">No document attached.</p>
+            )}
             <p
               className={`text-xs font-bold mt-1.5 ${l.titleVerified ? 'text-[var(--success)]' : 'text-[var(--warning)]'}`}
             >

@@ -2,7 +2,7 @@ import 'server-only'
 import { redirect } from 'next/navigation'
 import { appAuth, getRoleHomePath } from '@/lib/app-auth'
 import { getPayloadClient } from '@/lib/payload'
-import type { Notification, User } from '@/payload-types'
+import type { Media, Notification, User } from '@/payload-types'
 
 export type PortalUserSummary = {
   id: string
@@ -19,6 +19,9 @@ export type PortalUserSummary = {
   moaSignatureName: string
   gcashNumber: string
   mayaNumber: string
+  /** Uploaded profile photo, else the Google picture, else '' (initials are shown). */
+  avatarUrl: string
+  createdAt: string
 }
 
 export type PortalNotificationItem = {
@@ -100,6 +103,10 @@ export async function requirePortalUser(allowedRoles?: Array<User['role']>) {
     moaSignatureName: user.moaSignatureName || '',
     gcashNumber: user.gcashNumber || '',
     mayaNumber: user.mayaNumber || '',
+    avatarUrl:
+      user.avatarUrl ||
+      (user.avatar && typeof user.avatar === 'object' ? (user.avatar as Media).url || '' : ''),
+    createdAt: user.createdAt,
   }
 
   return {

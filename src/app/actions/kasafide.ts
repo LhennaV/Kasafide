@@ -2,6 +2,7 @@
 
 import { appAuth } from '@/lib/app-auth'
 import { getPayloadClient } from '@/lib/payload'
+import { ownsPath, ownsPublicUrl } from '@/lib/storage'
 
 export type ActionResult = {
   ok: boolean
@@ -236,6 +237,10 @@ export async function createSellerListingAction(input: {
   hasMultipleUnits: boolean
   totalUnits: number
   ownershipDocType: 'tct' | 'deed_of_sale' | 'tax_declaration'
+  /** Public URLs returned by /api/uploads (kind 'listing-photo'); the first one is the cover. */
+  photoUrls: string[]
+  /** Private path returned by /api/uploads (kind 'ownership-doc'). */
+  ownershipDocPath: string
 }): Promise<ActionResult> {
   const user = await appAuth.getCurrentUser()
   if (!user || (user.role !== 'seller' && !['admin', 'superadmin', 'super_duper_admin'].includes(user.role))) {
@@ -244,6 +249,19 @@ export async function createSellerListingAction(input: {
 
   if (!input.title.trim() || !input.address.trim() || !input.barangayId || input.price <= 0) {
     return { ok: false, error: 'Please complete title, barangay, address, and a valid price.' }
+  }
+
+  const photoUrls = (Array.isArray(input.photoUrls) ? input.photoUrls : [])
+    .filter((u) => ownsPublicUrl(String(user.id), 'listing-photo', u))
+    .slice(0, 10)
+  if (photoUrls.length === 0) {
+    return { ok: false, error: 'Please attach at least one photo of the property.' }
+  }
+  if (!ownsPath(String(user.id), 'ownership-doc', input.ownershipDocPath)) {
+    return {
+      ok: false,
+      error: 'Please attach your ownership document (title, deed of sale, or tax declaration).',
+    }
   }
 
   const payload = await getPayloadClient()
@@ -293,6 +311,8 @@ export async function createSellerListingAction(input: {
       totalUnits: Math.max(1, Number(input.totalUnits) || 1),
       availableUnits: Math.max(1, Number(input.totalUnits) || 1),
       ownershipDocType: input.ownershipDocType,
+      ownershipDocPath: input.ownershipDocPath,
+      photoUrls,
     },
   })
 
@@ -353,9 +373,23 @@ export async function signSellerMoaAction(signatureName: string): Promise<Action
 export async function submitIdentityVerificationAction(input: {
   idType: 'drivers_license' | 'passport' | 'philid' | 'umid' | 'postal_id'
   idNumberLast4: string
+  /** Private paths returned by /api/uploads (kinds 'id-photo' and 'selfie'). */
+  idImagePath: string
+  selfieImagePath: string
 }): Promise<ActionResult> {
   const user = await appAuth.getCurrentUser()
   if (!user) return { ok: false, error: 'Please sign in first.' }
+
+  const last4 = String(input.idNumberLast4 || '').replace(/\D/g, '')
+  if (last4.length !== 4) {
+    return { ok: false, error: 'Enter the last 4 digits of your ID number.' }
+  }
+  if (!ownsPath(String(user.id), 'id-photo', input.idImagePath)) {
+    return { ok: false, error: 'Please upload a photo of your ID.' }
+  }
+  if (!ownsPath(String(user.id), 'selfie', input.selfieImagePath)) {
+    return { ok: false, error: 'Please take a live selfie with the camera.' }
+  }
 
   const payload = await getPayloadClient()
   await payload.create({
@@ -365,8 +399,10 @@ export async function submitIdentityVerificationAction(input: {
     data: {
       user: user.id,
       idType: input.idType,
-      idNumberLast4: input.idNumberLast4.replace(/\D/g, '').slice(-4) || '0000',
+      idNumberLast4: last4,
       selfieCaptured: true,
+      idImagePath: input.idImagePath,
+      selfieImagePath: input.selfieImagePath,
       status: 'pending',
     },
   })
@@ -438,6 +474,20 @@ export async function updateProfileSettingsAction(input: {
   const user = await appAuth.getCurrentUser()
   if (!user) return { ok: false, error: 'Unauthorized' }
 
+  for (const [label, value] of [
+    ['Phone number', input.phone],
+    ['GCash number', input.gcashNumber],
+    ['Maya number', input.mayaNumber],
+  ] as const) {
+    const v = value?.trim() || ''
+    if (v && !isPhMobile(v)) {
+      return {
+        ok: false,
+        error: `${label} must be a PH mobile number, e.g. 09171234567 or +639171234567.`,
+      }
+    }
+  }
+
   const payload = await getPayloadClient()
   await payload.update({
     collection: 'users',
@@ -455,6 +505,28 @@ export async function updateProfileSettingsAction(input: {
     },
   })
   return { ok: true, message: 'Profile and payment details saved!' }
+}
+
+/** 09XXXXXXXXX or +639XXXXXXXXX (spaces and dashes ignored). */
+function isPhMobile(value: string): boolean {
+  return /^(09\d{9}|\+639\d{9})$/.test(value.replace(/[\s-]/g, ''))
+}
+
+export async function updateAvatarAction(avatarUrl: string | null): Promise<ActionResult> {
+  const user = await appAuth.getCurrentUser()
+  if (!user) return { ok: false, error: 'Please sign in first.' }
+  if (avatarUrl !== null && !ownsPublicUrl(String(user.id), 'avatar', avatarUrl)) {
+    return { ok: false, error: 'That photo could not be verified. Please upload it again.' }
+  }
+  const payload = await getPayloadClient()
+  await payload.update({
+    collection: 'users',
+    id: user.id,
+    user,
+    overrideAccess: false,
+    data: { avatarUrl: avatarUrl || '' },
+  })
+  return { ok: true, message: avatarUrl ? 'Profile photo updated.' : 'Profile photo removed.' }
 }
 
 const MIN_PASSWORD_LENGTH = 8

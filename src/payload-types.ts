@@ -536,6 +536,16 @@ export interface Listing {
   totalUnits?: number | null;
   availableUnits?: number | null;
   ownershipDocType?: ('tct' | 'deed_of_sale' | 'tax_declaration') | null;
+  ownershipDocPath?: string | null;
+  photoUrls?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   rejectionReason?: string | null;
   createdBy?:
     | ({
@@ -737,6 +747,8 @@ export interface VerificationSubmission {
   idType: 'drivers_license' | 'passport' | 'philid' | 'umid' | 'postal_id';
   idNumberLast4?: string | null;
   selfieCaptured?: boolean | null;
+  idImagePath?: string | null;
+  selfieImagePath?: string | null;
   status: 'pending' | 'approved' | 'rejected';
   reviewerNotes?: string | null;
   createdBy?:
@@ -1165,6 +1177,8 @@ export interface ListingsSelect<T extends boolean = true> {
   totalUnits?: T;
   availableUnits?: T;
   ownershipDocType?: T;
+  ownershipDocPath?: T;
+  photoUrls?: T;
   rejectionReason?: T;
   createdBy?: T;
   updatedBy?: T;
@@ -1249,6 +1263,8 @@ export interface VerificationSubmissionsSelect<T extends boolean = true> {
   idType?: T;
   idNumberLast4?: T;
   selfieCaptured?: T;
+  idImagePath?: T;
+  selfieImagePath?: T;
   status?: T;
   reviewerNotes?: T;
   createdBy?: T;

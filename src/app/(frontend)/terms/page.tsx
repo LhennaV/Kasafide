@@ -30,7 +30,49 @@ const SECTIONS = [
     id: 'payments',
     num: '04',
     title: 'Payments & Security Deposits',
-    body: 'All platform payment invoices and manual GCash/Maya proof records compute base amounts server-side from the approved listing price to prevent tampering.',
+    body: 'Payments made through Kasafide are processed by Xendit or recorded through uploaded GCash/Maya proof. The amount is always computed by Kasafide from the approved listing price, never typed in by the payer. Kasafide records the payment and its status; the rental or sale agreement itself is between the buyer/renter and the seller.',
+  },
+  {
+    id: 'listings',
+    num: '05',
+    title: 'Listing Rules',
+    body: 'A listing must describe a real property in Sta. Maria, Bulacan that the seller owns or is authorized to offer, with the seller’s own photos and an accurate price. Administrators may reject, hide, or remove a listing that is misleading, duplicated, reported as fraudulent, or not backed by a valid ownership document.',
+  },
+  {
+    id: 'conduct',
+    num: '06',
+    title: 'Prohibited Conduct',
+    body: 'You may not post false listings or documents, impersonate another person, ask for payment outside the platform to avoid verification, harass other users, upload content you have no right to share, or try to access accounts or data that are not yours. Doing so can lead to suspension of your account and may be reported to the authorities.',
+  },
+  {
+    id: 'google',
+    num: '07',
+    title: 'Signing In With Google',
+    body: 'If you sign in with Google, Kasafide receives only your name, email address, profile picture and Google account identifier, and uses them only to run your Kasafide account, as described in the Privacy Policy. You can disconnect Kasafide from your Google Account settings at any time.',
+  },
+  {
+    id: 'suspension',
+    num: '08',
+    title: 'Suspension and Account Deletion',
+    body: 'Administrators may suspend an account that breaks these Terms. You may stop using Kasafide and ask for your account to be deleted at any time by emailing kasafide.team@gmail.com.',
+  },
+  {
+    id: 'liability',
+    num: '09',
+    title: 'Limitation of Liability',
+    body: 'Kasafide verifies identities and ownership documents to reduce fraud, but it is a listing platform, not a real estate broker, and it is not a party to any lease or sale. Kasafide is provided "as is" as a student capstone project, and to the extent allowed by Philippine law it is not liable for losses arising from agreements between users.',
+  },
+  {
+    id: 'law',
+    num: '10',
+    title: 'Governing Law and Changes',
+    body: 'These Terms are governed by the laws of the Republic of the Philippines. If we change them, we will update the date at the top of this page; continuing to use Kasafide after a change means you accept the updated Terms.',
+  },
+  {
+    id: 'contact',
+    num: '11',
+    title: 'Contact',
+    body: 'Questions about these Terms: kasafide.team@gmail.com · Kasafide Team, Sta. Maria, Bulacan, Philippines.',
   },
 ]
 
@@ -61,7 +103,7 @@ export default function TermsPage() {
             <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-7">
               <h1 className="text-3xl font-black text-[var(--text)] mb-2">Terms of Service</h1>
               <p className="text-xs text-[var(--text-muted)] mb-4">
-                Effective Date: January 1, 2026 &middot; Municipality of Sta. Maria, Bulacan
+                Last updated: November 27, 2026 &middot; Municipality of Sta. Maria, Bulacan
               </p>
               <p className="text-sm text-[var(--text-soft)] leading-relaxed">
                 Please read these Terms carefully before using Kasafide. See also our{' '}

@@ -2,55 +2,81 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  changePasswordAction,
-  submitIdentityVerificationAction,
-  updateProfileSettingsAction,
-} from '@/app/actions/kasafide'
+import { changePasswordAction, updateProfileSettingsAction } from '@/app/actions/kasafide'
 import type { PortalUserSummary } from '@/lib/portal-guard'
 import { toast } from '@/lib/toast'
 
+export { IdentityVerificationForm } from './IdentityVerificationForm'
+
 const FAILED = { ok: false, error: 'Could not reach the server. Please try again.' } as const
+
+/** Keeps only digits, plus one leading "+", so letters can't be typed into a number field. */
+function phoneChars(value: string): string {
+  const plus = value.trimStart().startsWith('+') ? '+' : ''
+  return (plus + value.replace(/\D/g, '')).slice(0, 13)
+}
+
+/** 09XXXXXXXXX or +639XXXXXXXXX. Empty is allowed (the field is optional). */
+function phoneError(value: string): string {
+  if (!value) return ''
+  return /^(09\d{9}|\+639\d{9})$/.test(value) ? '' : 'Use 11 digits like 09171234567, or +639171234567.'
+}
+
+const inputClass =
+  'w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm'
 
 export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [firstName, setFirstName] = useState(user.firstName)
-  const [middleInitial, setMiddleInitial] = useState(user.middleInitial)
-  const [lastName, setLastName] = useState(user.lastName)
-  const [phone, setPhone] = useState(user.phone)
-  const [bio, setBio] = useState(user.bio)
-  const [gcashNumber, setGcashNumber] = useState(user.gcashNumber)
-  const [mayaNumber, setMayaNumber] = useState(user.mayaNumber)
+  const initial = {
+    firstName: user.firstName,
+    middleInitial: user.middleInitial,
+    lastName: user.lastName,
+    phone: user.phone,
+    bio: user.bio,
+    gcashNumber: user.gcashNumber,
+    mayaNumber: user.mayaNumber,
+  }
+  const [saved, setSaved] = useState(initial)
+  const [form, setForm] = useState(initial)
+  const set = (key: keyof typeof initial) => (value: string) =>
+    setForm((f) => ({ ...f, [key]: value }))
+
+  const changed = (Object.keys(form) as Array<keyof typeof form>).some(
+    (k) => (form[k] || '').trim() !== (saved[k] || '').trim(),
+  )
+  const errors = {
+    phone: phoneError(form.phone),
+    gcashNumber: user.role === 'seller' ? phoneError(form.gcashNumber) : '',
+    mayaNumber: user.role === 'seller' ? phoneError(form.mayaNumber) : '',
+    name: !form.firstName.trim() || !form.lastName.trim() ? 'First and last name are required.' : '',
+  }
+  const hasError = Object.values(errors).some(Boolean)
 
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault()
+        if (!changed || hasError) return
         startTransition(async () => {
-          const res = await updateProfileSettingsAction({
-            firstName,
-            middleInitial,
-            lastName,
-            phone,
-            bio,
-            gcashNumber,
-            mayaNumber,
-          }).catch(() => FAILED)
+          const res = await updateProfileSettingsAction(form).catch(() => FAILED)
           toast.result(res, 'Saved')
-          if (res.ok) router.refresh()
+          if (res.ok) {
+            setSaved(form)
+            router.refresh()
+          }
         })
       }}
-      className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 max-w-2xl"
+      className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 w-full"
     >
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_6rem_1fr] gap-3">
         <div>
           <label className="block text-xs font-bold mb-1">First Name</label>
           <input
             type="text"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
+            value={form.firstName}
+            onChange={(e) => set('firstName')(e.target.value)}
+            className={inputClass}
           />
         </div>
         <div>
@@ -58,21 +84,22 @@ export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
           <input
             type="text"
             maxLength={2}
-            value={middleInitial}
-            onChange={(e) => setMiddleInitial(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
+            value={form.middleInitial}
+            onChange={(e) => set('middleInitial')(e.target.value.replace(/[^A-Za-z.]/g, ''))}
+            className={inputClass}
           />
         </div>
         <div>
           <label className="block text-xs font-bold mb-1">Last Name</label>
           <input
             type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
+            value={form.lastName}
+            onChange={(e) => set('lastName')(e.target.value)}
+            className={inputClass}
           />
         </div>
       </div>
+      {errors.name && <p className="text-xs font-bold text-[var(--danger)]">{errors.name}</p>}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
@@ -84,40 +111,31 @@ export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
             className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface-soft)] text-sm opacity-75"
           />
         </div>
-        <div>
-          <label className="block text-xs font-bold mb-1">Phone Number</label>
-          <input
-            type="text"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+63917..."
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
-          />
-        </div>
+        <PhoneField
+          label="Phone Number"
+          value={form.phone}
+          onChange={set('phone')}
+          error={errors.phone}
+          placeholder="09171234567"
+        />
       </div>
 
       {user.role === 'seller' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[var(--border)]">
-          <div>
-            <label className="block text-xs font-bold mb-1">GCash Payout Number</label>
-            <input
-              type="text"
-              value={gcashNumber}
-              onChange={(e) => setGcashNumber(e.target.value)}
-              placeholder="0917..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold mb-1">Maya Payout Number</label>
-            <input
-              type="text"
-              value={mayaNumber}
-              onChange={(e) => setMayaNumber(e.target.value)}
-              placeholder="0917..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
-            />
-          </div>
+          <PhoneField
+            label="GCash Payout Number"
+            value={form.gcashNumber}
+            onChange={set('gcashNumber')}
+            error={errors.gcashNumber}
+            placeholder="09171234567"
+          />
+          <PhoneField
+            label="Maya Payout Number"
+            value={form.mayaNumber}
+            onChange={set('mayaNumber')}
+            error={errors.mayaNumber}
+            placeholder="09171234567"
+          />
         </div>
       )}
 
@@ -125,115 +143,63 @@ export function AccountSettingsForm({ user }: { user: PortalUserSummary }) {
         <label className="block text-xs font-bold mb-1">Short Bio</label>
         <textarea
           rows={3}
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
+          maxLength={500}
+          value={form.bio}
+          onChange={(e) => set('bio')(e.target.value)}
+          className={inputClass}
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="px-6 py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer"
-      >
-        {isPending ? 'Saving…' : 'Save Account Settings'}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={isPending || !changed || hasError}
+          className="px-6 py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
+        >
+          {isPending ? 'Saving…' : 'Save Account Settings'}
+        </button>
+        {changed && !isPending && (
+          <button
+            type="button"
+            onClick={() => setForm(saved)}
+            className="px-4 py-3 rounded-xl border border-[var(--border)] text-sm font-bold cursor-pointer"
+          >
+            Discard changes
+          </button>
+        )}
+        {!changed && <span className="text-xs text-[var(--text-muted)]">No changes to save.</span>}
+      </div>
     </form>
   )
 }
 
-export function IdentityVerificationForm({
-  currentStatus,
+function PhoneField({
+  label,
+  value,
+  onChange,
+  error,
+  placeholder,
 }: {
-  currentStatus: PortalUserSummary['accountStatus']
+  label: string
+  value: string
+  onChange: (v: string) => void
+  error: string
+  placeholder: string
 }) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [idType, setIdType] = useState<'drivers_license' | 'passport' | 'philid' | 'umid' | 'postal_id'>('philid')
-  const [last4, setLast4] = useState('')
-  const [selfieReady, setSelfieReady] = useState(false)
-
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 max-w-xl space-y-5">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--text-muted)]">
-          Current Verification Status
-        </span>
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase ${
-            currentStatus === 'verified'
-              ? 'bg-[var(--success)]/15 text-[var(--success)]'
-              : 'bg-[var(--warning)]/15 text-[var(--warning)]'
-          }`}
-        >
-          {currentStatus}
-        </span>
-      </div>
-
-      <div>
-        <label className="block text-xs font-bold mb-1.5">Step 1 &middot; Select Valid Philippine Government ID</label>
-        <select
-          value={idType}
-          onChange={(e) => setIdType(e.target.value as typeof idType)}
-          className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
-        >
-          <option value="philid">PhilSys National ID</option>
-          <option value="drivers_license">LTO Driver&apos;s License</option>
-          <option value="passport">Philippine Passport</option>
-          <option value="umid">UMID Card</option>
-          <option value="postal_id">Postal ID</option>
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-xs font-bold mb-1.5">Last 4 Digits of ID Number</label>
-        <input
-          type="text"
-          maxLength={4}
-          value={last4}
-          onChange={(e) => setLast4(e.target.value.replace(/\D/g, '').slice(0, 4))}
-          placeholder="e.g. 9012"
-          className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm"
-        />
-      </div>
-
-      <div>
-        <label className="block text-xs font-bold mb-1.5">Step 2 &middot; In-App Camera Selfie Check</label>
-        <button
-          type="button"
-          onClick={() => setSelfieReady(true)}
-          className={`w-full p-5 rounded-2xl border-2 border-dashed text-center transition cursor-pointer ${
-            selfieReady
-              ? 'border-[var(--success)] bg-[var(--success)]/10 text-[var(--success)]'
-              : 'border-[var(--border)] hover:border-[var(--primary)] text-[var(--text-muted)]'
-          }`}
-        >
-          <div className="font-extrabold text-sm">
-            {selfieReady ? '✓ Live Selfie Frame Captured' : 'Tap to Capture Live Selfie with ID'}
-          </div>
-          <div className="text-xs mt-1">
-            Kasafide admins compare your live selfie directly against your government ID portrait.
-          </div>
-        </button>
-      </div>
-
-      <button
-        type="button"
-        disabled={isPending || !selfieReady}
-        onClick={() => {
-          startTransition(async () => {
-            const res = await submitIdentityVerificationAction({
-              idType,
-              idNumberLast4: last4 || '1234',
-            }).catch(() => FAILED)
-            toast.result(res, 'Submitted!')
-            if (res.ok) router.refresh()
-          })
-        }}
-        className="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer disabled:opacity-45"
-      >
-        {isPending ? 'Submitting…' : 'Submit for Admin Verification'}
-      </button>
+    <div>
+      <label className="block text-xs font-bold mb-1">{label}</label>
+      <input
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        value={value}
+        onChange={(e) => onChange(phoneChars(e.target.value))}
+        placeholder={placeholder}
+        aria-invalid={Boolean(error)}
+        className={`${inputClass} ${error ? 'border-[var(--danger)]' : ''}`}
+      />
+      {error && <p className="text-[11px] font-bold text-[var(--danger)] mt-1">{error}</p>}
     </div>
   )
 }
@@ -248,11 +214,12 @@ export function ChangePasswordForm() {
   const [show, setShow] = useState(false)
   const [error, setError] = useState('')
 
-  const inputClass =
-    'w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-sm'
+  // Nothing typed yet (or a field still empty) → nothing to update.
+  const filled = Boolean(current && next && confirm)
 
   return (
     <form
+      id="change-password"
       noValidate
       onSubmit={(e) => {
         e.preventDefault()
@@ -260,6 +227,7 @@ export function ChangePasswordForm() {
         if (!current) return setError('Enter your current password.')
         if (next.length < PASSWORD_MIN) return setError(`Use at least ${PASSWORD_MIN} characters.`)
         if (next !== confirm) return setError('The new passwords do not match.')
+        if (next === current) return setError('The new password must be different from the current one.')
         startTransition(async () => {
           const res = await changePasswordAction({
             currentPassword: current,
@@ -275,12 +243,15 @@ export function ChangePasswordForm() {
           setConfirm('')
         })
       }}
-      className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 max-w-2xl"
+      className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 space-y-4 w-full scroll-mt-24"
     >
       <div>
         <h2 className="text-base font-extrabold text-[var(--text)]">Change Password</h2>
         <p className="text-xs text-[var(--text-muted)] mt-1">
-          Use at least {PASSWORD_MIN} characters. You&apos;ll stay signed in on this device.
+          Use at least {PASSWORD_MIN} characters. You&apos;ll stay signed in on this device.{' '}
+          <a href="/auth/forgot-password" className="font-bold text-[var(--primary)] hover:underline">
+            Forgot your current password?
+          </a>
         </p>
       </div>
 
@@ -338,8 +309,8 @@ export function ChangePasswordForm() {
 
       <button
         type="submit"
-        disabled={isPending}
-        className="px-6 py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer disabled:opacity-60"
+        disabled={isPending || !filled}
+        className="px-6 py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-sm cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed"
       >
         {isPending ? 'Updating…' : 'Update Password'}
       </button>

@@ -37,6 +37,9 @@ export const VerificationSubmissions: CollectionConfig = {
     },
     { name: 'idNumberLast4', type: 'text' },
     { name: 'selfieCaptured', type: 'checkbox', defaultValue: true },
+    // Supabase Storage paths in the private bucket; admins view them through signed links.
+    { name: 'idImagePath', type: 'text', admin: { readOnly: true } },
+    { name: 'selfieImagePath', type: 'text', admin: { readOnly: true } },
     {
       name: 'status',
       type: 'select',

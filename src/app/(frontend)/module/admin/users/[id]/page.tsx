@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayloadClient } from '@/lib/payload'
 import { requirePortalUser } from '@/lib/portal-guard'
+import { signedUrl } from '@/lib/storage'
 import { PortalShell } from '@/components/kasafide/PortalShell'
 import type { User, VerificationSubmission } from '@/payload-types'
 import { AdminUserDetailActions } from './AdminUserDetailClient'
@@ -94,6 +95,13 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   ])
 
   const submissions = submissionsRes.docs as VerificationSubmission[]
+  // Short-lived links to the private ID photo + selfie, so the admin can compare them.
+  const files = await Promise.all(
+    submissions.map(async (s) => ({
+      id: await signedUrl(s.idImagePath),
+      selfie: await signedUrl(s.selfieImagePath),
+    })),
+  )
   const latest = submissions[0]
   const lastRejection = submissions.find((s) => s.status === 'rejected' && s.reviewerNotes)
   const savedCount = target.savedListings?.length ?? 0
@@ -205,11 +213,47 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <p className="text-sm text-[var(--text-muted)]">No ID submitted yet.</p>
             ) : (
               <ul className="divide-y divide-[var(--border)]/60">
-                {submissions.map((s) => (
+                {submissions.map((s, i) => (
                   <li
                     key={s.id}
-                    className="py-3.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+                    className="py-3.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4"
                   >
+                    <div className="flex gap-2 shrink-0">
+                      {(
+                        [
+                          ['Government ID', files[i]?.id],
+                          ['Live selfie', files[i]?.selfie],
+                        ] as const
+                      ).map(([label, url]) =>
+                        url ? (
+                          <a
+                            key={label}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`Open ${label.toLowerCase()} in a new tab`}
+                            className="block w-32 sm:w-40"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element -- signed, expiring URL */}
+                            <img
+                              src={url}
+                              alt={`${label} of ${target.fullName}`}
+                              className="w-full aspect-[4/3] object-cover rounded-xl border border-[var(--border)] bg-[var(--surface-soft)]"
+                            />
+                            <span className="block text-[11px] font-bold text-[var(--text-muted)] mt-1">
+                              {label}
+                            </span>
+                          </a>
+                        ) : (
+                          <div
+                            key={label}
+                            className="w-32 sm:w-40 aspect-[4/3] rounded-xl border border-dashed border-[var(--border)] flex items-center justify-center text-center text-[11px] text-[var(--text-muted)] p-2"
+                          >
+                            No {label.toLowerCase()} file
+                          </div>
+                        ),
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-extrabold text-sm text-[var(--text)]">
                         {ID_TYPE_LABELS[s.idType] ?? s.idType}

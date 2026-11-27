@@ -35,6 +35,16 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
   },
+  // Signed-in pages must never be stored by the browser or a CDN: after logout, opening a
+  // copied portal link has to reach the server (which sends it to sign-in), not a saved copy.
+  async headers() {
+    return [
+      {
+        source: '/module/:path*',
+        headers: [{ key: 'Cache-Control', value: 'private, no-store, max-age=0, must-revalidate' }],
+      },
+    ]
+  },
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })

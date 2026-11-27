@@ -124,13 +124,13 @@ function getRoleNavigation(role: PortalUserSummary['role']): {
       primary: [
         { id: 'dashboard', label: 'Dashboard', shortLabel: 'Home', href: '/module/seller', icon: 'grid' },
         { id: 'listings', label: 'My Listings', shortLabel: 'Listings', href: '/module/seller/listings', icon: 'home' },
-        { id: 'post', label: 'Post Property', shortLabel: 'Post', href: '/module/seller/post', icon: 'plus' },
+        { id: 'tenants', label: 'My Tenants', shortLabel: 'Tenants', href: '/module/seller/tenants', icon: 'users' },
         { id: 'messages', label: 'Messages', shortLabel: 'Chat', href: '/module/seller/messages', icon: 'message' },
+        { id: 'post', label: 'Post Property', shortLabel: 'Post', href: '/module/seller/post', icon: 'plus' },
         { id: 'payments', label: 'Payments', shortLabel: 'Pay', href: '/module/seller/payments', icon: 'wallet' },
       ],
       secondary: [
         { label: 'Viewing Requests', href: '/module/seller/viewing-requests' },
-        { label: 'My Tenants & Deposits', href: '/module/seller/tenants' },
         { label: 'Memorandum of Agreement (MOA)', href: '/module/seller/moa' },
         { label: 'Identity Verification', href: '/module/seller/verification' },
         { label: 'My Reviews', href: '/module/seller/reviews' },
@@ -218,6 +218,23 @@ export function PortalShell({
   const [moreSheetOpen, setMoreSheetOpen] = useState(false)
 
   const nav = getRoleNavigation(user.role)
+  // The logo takes a signed-in user to their own dashboard, not to the public landing page
+  // (which looked like being logged out).
+  const homeHref = nav.primary[0].href
+  // Pages that used to be in the sidebar's "More Tools" and have no other link on desktop
+  // (profile/settings/verification/help are already in the menu, notifications on the bell).
+  const menuExtras = nav.secondary.filter(
+    (s) => !/\/(profile|settings|verification|help|notifications)$/.test(s.href),
+  )
+
+  // A full page load (not router.push) after signing out, so no page already rendered for
+  // the signed-in user stays in the client router cache and opens again without a login.
+  async function logout() {
+    setProfileOpen(false)
+    setMoreSheetOpen(false)
+    await signOutInPlace(router)
+    window.location.replace('/auth/signin')
+  }
   const unreadNotifCount = notifications.filter((n) => n.unread).length
   const initials = `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'K'
 
@@ -226,7 +243,7 @@ export function PortalShell({
       {/* ── Desktop Collapsible Hover Rail Sidebar (Preserved from sidebar.js) ── */}
       <aside className="hidden md:block kf-rail-slot relative z-40 shrink-0">
         <div className="kf-rail-panel fixed top-0 left-0 bottom-0 bg-[var(--sidebar-bg)] border-r border-black/20 flex flex-col py-5 px-3 overflow-x-hidden overflow-y-auto">
-          <Link href="/" className="flex items-center gap-2.5 px-2 mb-7 shrink-0">
+          <Link href={homeHref} className="flex items-center gap-2.5 px-2 mb-7 shrink-0">
             <KasafideLogo size={28} variant="dark" />
             <span className="kf-rail-label font-extrabold text-[17px] text-[#FBF6F0] whitespace-nowrap overflow-hidden transition-all">
               Kasafide
@@ -261,31 +278,14 @@ export function PortalShell({
               )
             })}
 
-            {nav.secondary.length > 0 && (
-              <div className="kf-rail-submenu pt-4 mt-3 border-t border-white/10 space-y-1">
-                <div className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white/45">
-                  More Tools
-                </div>
-                {nav.secondary.map((sub) => (
-                  <Link
-                    key={sub.href}
-                    href={sub.href}
-                    className="block px-3 py-2 rounded-xl text-xs font-medium text-white/65 hover:text-white hover:bg-white/8 truncate"
-                  >
-                    {sub.label}
-                  </Link>
-                ))}
-              </div>
-            )}
+            {/* No "More Tools" list in the sidebar: those pages live in the profile menu
+                (top right) and the bell; on phones they're in the "More" sheet. */}
           </nav>
 
           <div className="pt-3 border-t border-white/10">
             <button
               type="button"
-              onClick={async () => {
-                await signOutInPlace(router)
-                router.push('/')
-              }}
+              onClick={() => void logout()}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold text-white/65 hover:text-[#FF8A8A] hover:bg-[#FF8A8A]/12 transition cursor-pointer"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -306,7 +306,7 @@ export function PortalShell({
         {/* Topbar (Preserved from topbar.js) */}
         <header className="sticky top-0 z-30 h-15 px-4 sm:px-7 bg-[var(--surface)]/92 backdrop-blur-md border-b border-[var(--border)] flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <Link href="/" className="md:hidden flex items-center gap-2 font-extrabold text-base shrink-0">
+            <Link href={homeHref} className="md:hidden flex items-center gap-2 font-extrabold text-base shrink-0">
               <KasafideLogo size={26} />
               <span>Kasafide</span>
             </Link>
@@ -402,9 +402,15 @@ export function PortalShell({
                   setProfileOpen((v) => !v)
                   setNotifOpen(false)
                 }}
-                className="w-9 h-9 rounded-full bg-[var(--primary)]/20 border-2 border-[var(--primary)]/50 text-[var(--primary)] text-xs font-extrabold flex items-center justify-center cursor-pointer"
+                aria-label="Profile menu"
+                className="w-9 h-9 rounded-full overflow-hidden bg-[var(--primary)]/20 border-2 border-[var(--primary)]/50 text-[var(--primary)] text-xs font-extrabold flex items-center justify-center cursor-pointer"
               >
-                {initials}
+                {user.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- external avatar URL
+                  <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  initials
+                )}
               </button>
 
               {profileOpen && (
@@ -451,13 +457,23 @@ export function PortalShell({
                         </Link>
                       </>
                     )}
+                    {menuExtras.length > 0 && (
+                      <div className="my-1.5 border-t border-[var(--border)] pt-1.5">
+                        {menuExtras.map((sub) => (
+                          <Link
+                            key={sub.href}
+                            href={sub.href}
+                            onClick={() => setProfileOpen(false)}
+                            className="block px-4 py-2 hover:bg-[var(--surface-soft)]"
+                          >
+                            {sub.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                     <button
                       type="button"
-                      onClick={async () => {
-                        setProfileOpen(false)
-                        await signOutInPlace(router)
-                        router.push('/')
-                      }}
+                      onClick={() => void logout()}
                       className="w-full text-left px-4 py-2 text-[var(--danger)] hover:bg-[var(--danger)]/10 cursor-pointer"
                     >
                       Logout
@@ -470,7 +486,7 @@ export function PortalShell({
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 sm:p-7 pb-safe md:pb-10 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-7 pb-safe md:pb-10 w-full">
           {children}
         </main>
       </div>
@@ -567,11 +583,7 @@ export function PortalShell({
 
             <button
               type="button"
-              onClick={async () => {
-                setMoreSheetOpen(false)
-                await signOutInPlace(router)
-                router.push('/')
-              }}
+              onClick={() => void logout()}
               className="w-full py-3 rounded-xl bg-[var(--danger)]/15 text-[var(--danger)] font-extrabold text-sm"
             >
               Log Out

@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { requirePortalUser } from '@/lib/portal-guard'
 import { PortalShell } from '@/components/kasafide/PortalShell'
+import { ProfileCard } from '@/components/kasafide/ProfileCard'
 
 export default async function SellerProfilePage() {
   const { user, notifications, unreadMessageCount } = await requirePortalUser([
@@ -16,29 +16,14 @@ export default async function SellerProfilePage() {
       notifications={notifications}
       unreadMessageCount={unreadMessageCount}
     >
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-7 max-w-2xl space-y-4">
-        <h1 className="text-2xl font-black">{user.fullName}</h1>
-        <div className="text-xs font-bold text-[var(--primary)] uppercase">
-          Seller &middot; {user.accountStatus}
-        </div>
-        <p className="text-sm text-[var(--text-soft)]">{user.bio || 'Sta. Maria Landowner'}</p>
-        <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-[var(--border)]">
-          <div>
-            <span className="text-[var(--text-muted)] block">GCash</span>
-            <strong>{user.gcashNumber || 'Not configured'}</strong>
-          </div>
-          <div>
-            <span className="text-[var(--text-muted)] block">Maya</span>
-            <strong>{user.mayaNumber || 'Not configured'}</strong>
-          </div>
-        </div>
-        <Link
-          href="/module/seller/settings"
-          className="inline-block px-5 py-2.5 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-extrabold text-xs"
-        >
-          Edit Seller Settings
-        </Link>
-      </div>
+      <ProfileCard
+        user={user}
+        settingsHref="/module/seller/settings"
+        extra={[
+          { label: 'GCash Payout', value: user.gcashNumber || 'Not configured' },
+          { label: 'Maya Payout', value: user.mayaNumber || 'Not configured' },
+        ]}
+      />
     </PortalShell>
   )
 }

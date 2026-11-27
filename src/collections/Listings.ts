@@ -209,6 +209,20 @@ export const Listings: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     {
+      // Supabase Storage path (private bucket) of the scanned title / deed / tax declaration the
+      // seller attached. Opened by admins through a short-lived signed link.
+      name: 'ownershipDocPath',
+      type: 'text',
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      // Public Supabase Storage URLs of the seller's own photos, first one is the cover.
+      // When present these replace coverImage/gallery on every listing card and detail page.
+      name: 'photoUrls',
+      type: 'json',
+      admin: { readOnly: true },
+    },
+    {
       name: 'rejectionReason',
       type: 'textarea',
       access: { update: isAppStaffField },

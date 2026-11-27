@@ -88,24 +88,20 @@ export function AdminUsersClient({ rows }: { rows: AdminUserRow[] }) {
                 </td>
                 <td data-label="Actions" className="py-3.5 px-5">
                   <div className="flex flex-wrap gap-1.5 justify-end md:justify-start">
-                    {u.accountStatus !== 'verified' && (
-                      <button
-                        type="button"
-                        disabled={isPending}
-                        onClick={() => {
-                          startTransition(async () => {
-                            await withToast(adminModerateUserAction({
-                              targetUserId: u.id,
-                              accountStatus: 'verified',
-                            }))
-                            router.refresh()
-                          })
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-[var(--success)]/20 text-[var(--success)] text-xs font-extrabold cursor-pointer"
-                      >
-                        Verify ID
-                      </button>
-                    )}
+                    {/* Approve/reject happens on the detail page, next to the ID photo and
+                        selfie, so nobody is verified without the documents being looked at. */}
+                    <Link
+                      href={`/module/admin/users/${u.id}`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold ${
+                        u.accountStatus === 'verified' || u.accountStatus === 'suspended'
+                          ? 'bg-[var(--surface-soft)] text-[var(--text)]'
+                          : 'bg-[var(--success)]/20 text-[var(--success)]'
+                      }`}
+                    >
+                      {u.accountStatus === 'verified' || u.accountStatus === 'suspended'
+                        ? 'View'
+                        : 'Review ID'}
+                    </Link>
                     {u.accountStatus !== 'suspended' &&
                       !['admin', 'superadmin', 'super_duper_admin'].includes(u.role) && (
                         <button

@@ -16,7 +16,7 @@ export default async function SellerNotificationsPage() {
       unreadMessageCount={unreadMessageCount}
     >
       <h1 className="text-2xl sm:text-3xl font-black text-[var(--text)] mb-5">Notifications</h1>
-      <div className="space-y-3 max-w-3xl">
+      <div className="space-y-3 w-full">
         {notifications.map((n) => (
           <div
             key={n.id}
